@@ -25,12 +25,16 @@ final class UserController {
         return try self.userService.fetch(request: request)
     }
     
-    func create(_ request: Request, user: User) throws -> Future<Response> {
-        return try self.userService.create(user: user, request: request)
+    func create(_ request: Request, userForm: User.Form) throws -> Future<AccessDto> {
+        return try self.userService.create(userForm: userForm, request: request)
     }
     
     func confirm(_ request: Request, confirmPhoneDto: ConfirmPhoneDto) throws -> Future<User> {
         return try self.userService.confirm(request, confirmPhoneDto: confirmPhoneDto)
+    }
+    
+    func refreshToken(_ request: Request, accessDto: AccessDto) throws -> Future<AccessDto> {
+        return try self.userService.refreshToken(request, accessDto: accessDto)
     }
 }
 
@@ -44,8 +48,8 @@ extension UserController: RouteCollection {
         let group = router.grouped("v1/account").grouped(Logger())
         let authGroup = group.grouped(JWTMiddleware())
         
-        group.post(User.self, use: self.create)
+        group.post(User.Form.self, use: self.create)
         authGroup.get(use: self.index)
-        authGroup.post(ConfirmPhoneDto.self, use: self.confirm)
+        authGroup.post(ConfirmPhoneDto.self, at: "/confirm", use: self.confirm)
     }
 }

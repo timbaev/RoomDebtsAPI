@@ -11,8 +11,8 @@ protocol UserService {
     
     // MARK: - Instance Methods
     
-    func create(user: User, request: Request) throws -> Future<Response>
+    func create(userForm: User.Form, request: Request) throws -> Future<AccessDto>
     func fetch(request: Request) throws -> Future<[User]>
     func confirm(_ request: Request, confirmPhoneDto: ConfirmPhoneDto) throws -> Future<User>
-    
+    func refreshToken(_ request: Request, accessDto: AccessDto) throws -> Future<AccessDto>
 }

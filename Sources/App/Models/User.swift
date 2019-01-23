@@ -10,21 +10,43 @@ import FluentPostgreSQL
 
 final class User: PostgreSQLModel {
     
+    // MARK: - Nested Types
+    
+    struct Form: Content {
+        
+        // MARK: - Instance Properties
+        
+        let firstName: String
+        let lastName: String
+        let phoneNumber: String
+    }
+    
     // MARK: - Instance Properties
 
     var id: Int?
     var firstName: String
     var lastName: String
     var phoneNumber: String
-    var isConfirmed: Bool? = false
+    var isConfirmed = false
     
     // MARK: - Initializers
     
-    init(id: Int, firstName: String, lastName: String, phoneNumber: String) {
+    init(id: Int? = nil, firstName: String, lastName: String, phoneNumber: String) {
         self.id = id
         self.firstName = firstName
         self.lastName = lastName
         self.phoneNumber = phoneNumber
+    }
+}
+
+// MARK: -
+
+extension User {
+    
+    // MARK: - Instance Properties
+    
+    var refreshTokens: Children<User, RefreshToken> {
+        return self.children(\.userID)
     }
 }
 

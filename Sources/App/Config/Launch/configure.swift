@@ -40,6 +40,7 @@ public func configure(_ config: inout Config, _ env: inout Environment, _ servic
     var migrations = MigrationConfig()
     
     migrations.add(model: User.self, database: .psql)
+    migrations.add(model: RefreshToken.self, database: .psql)
     
     services.register(migrations)
     

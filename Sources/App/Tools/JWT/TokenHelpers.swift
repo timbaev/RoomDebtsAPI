@@ -9,6 +9,15 @@ import JWT
 
 class TokenHelpers {
     
+    // MARK: - Nested Types
+    
+    fileprivate enum Constants {
+        
+        // MARK: - Type Properties
+        
+        static let refreshTokenLength = 37
+    }
+    
     // MARK: - Instance Methods
     
     class func createPayload(from user: User) throws -> Payload {
@@ -38,6 +47,17 @@ class TokenHelpers {
         } else {
             throw JWTError.createJWT
         }
+    }
+    
+    class func expiredDate(of token: String) throws -> Date {
+        let receivedJWT = try JWT<Payload>(from: token, verifiedUsing: JWTConfig.signer)
+        
+        return receivedJWT.payload.exp.value
+    }
+    
+    class func createRefreshToken() -> String {
+        let letters = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789"
+        return String((0 ... Constants.refreshTokenLength).map { _ in letters.randomElement()! })
     }
     
     class func tokenIsVerified(_ token: String) throws {
