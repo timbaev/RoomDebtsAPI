@@ -37,7 +37,7 @@ extension UserController: RouteCollection {
     // MARK: - Instance Methods
     
     func boot(router: Router) throws {
-        let group = router.grouped("v1/account")
+        let group = router.grouped("v1/account").grouped(Logger())
         let authGroup = group.grouped(JWTMiddleware())
         
         group.post(User.self, use: self.create)

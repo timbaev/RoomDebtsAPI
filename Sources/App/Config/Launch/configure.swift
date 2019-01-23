@@ -15,6 +15,7 @@ public func configure(_ config: inout Config, _ env: inout Environment, _ servic
     var middleware = MiddlewareConfig()
     
     middleware.use(ErrorMiddleware.self)
+    
     services.register(middleware)
     
     // MARK: - PostgreSQL
