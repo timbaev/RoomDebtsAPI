@@ -12,7 +12,7 @@ class DefaultUserService: UserService {
     
     // MARK: - Instance Methods
     
-    func create(user: User, request: Request) throws -> Future<User> {
+    func create(user: User, request: Request) throws -> Future<Response> {
         // TODO: - Send verification code
         
         let existingUser = User.query(on: request).filter(\.phoneNumber == user.phoneNumber).first()
@@ -22,8 +22,18 @@ class DefaultUserService: UserService {
                 throw Abort(.badRequest, reason: "User with phone number \(user.phoneNumber) already exists")
             }
             
-            return try request.content.decode(User.self).flatMap { user in
-                return user.save(on: request)
+            return user.save(on: request).flatMap { user in
+                do {
+                    let token = try TokenHelpers.createJWT(from: user)
+                    
+                    let httpBody = HTTPBody(data: try JSONEncoder().encode(user))
+                    let http = HTTPResponse(headers: [HeaderKeys.authorization: token], body: httpBody)
+                    
+                    return request.future(Response(http: http, using: request))
+                } catch {
+                    print(error.localizedDescription)
+                    throw Abort(.badRequest, reason: "Can't create token")
+                }
             }
         }
     }
@@ -31,5 +41,4 @@ class DefaultUserService: UserService {
     func fetch(request: Request) throws -> Future<[User]> {
         return User.query(on: request).all()
     }
-    
 }

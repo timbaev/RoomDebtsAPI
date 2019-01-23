@@ -19,7 +19,7 @@ final class UserController {
         return try self.userService.fetch(request: request)
     }
     
-    func create(_ request: Request, user: User) throws -> Future<User> {
+    func create(_ request: Request, user: User) throws -> Future<Response> {
         return try self.userService.create(user: user, request: request)
     }
     
@@ -27,5 +27,20 @@ final class UserController {
     
     init(userService: UserService) {
         self.userService = userService
+    }
+}
+
+// MARK: - RouteCollection
+
+extension UserController: RouteCollection {
+    
+    // MARK: - Instance Methods
+    
+    func boot(router: Router) throws {
+        let group = router.grouped("v1/account")
+        let authGroup = group.grouped(JWTMiddleware())
+        
+        group.post(User.self, use: self.create)
+        authGroup.get(use: self.index)
     }
 }

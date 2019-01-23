@@ -11,7 +11,7 @@ protocol UserService {
     
     // MARK: - Instance Methods
     
-    func create(user: User, request: Request) throws -> Future<User>
+    func create(user: User, request: Request) throws -> Future<Response>
     func fetch(request: Request) throws -> Future<[User]>
     
 }
