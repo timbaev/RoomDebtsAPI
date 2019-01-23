@@ -5,9 +5,9 @@
 //  Created by Timur Shafigullin on 22/01/2019.
 //
 
-import Foundation
+import Vapor
 
-struct ConfirmPhoneDto: Codable {
+struct ConfirmPhoneDto: Content {
     
     // MARK: - Instance Properties
     

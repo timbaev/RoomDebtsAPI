@@ -32,7 +32,7 @@ class Logger: Middleware {
             
             var remoteUserID = "-"
             if let userID = try? TokenHelpers.getUserID(fromPayloadOf: request.token) {
-                remoteUserID = "userID: \(userID)"
+                remoteUserID = "\(userID)"
             }
             
             var responseContentLength = "-"

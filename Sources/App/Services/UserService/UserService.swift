@@ -13,5 +13,6 @@ protocol UserService {
     
     func create(user: User, request: Request) throws -> Future<Response>
     func fetch(request: Request) throws -> Future<[User]>
+    func confirm(_ request: Request, confirmPhoneDto: ConfirmPhoneDto) throws -> Future<User>
     
 }

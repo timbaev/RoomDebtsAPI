@@ -13,6 +13,12 @@ final class UserController {
     
     var userService: UserService
     
+    // MARK: - Initializers
+    
+    init(userService: UserService) {
+        self.userService = userService
+    }
+    
     // MARK: - Instance Methods
     
     func index(_ request: Request) throws -> Future<[User]> {
@@ -23,10 +29,8 @@ final class UserController {
         return try self.userService.create(user: user, request: request)
     }
     
-    // MARK: - Initializers
-    
-    init(userService: UserService) {
-        self.userService = userService
+    func confirm(_ request: Request, confirmPhoneDto: ConfirmPhoneDto) throws -> Future<User> {
+        return try self.userService.confirm(request, confirmPhoneDto: confirmPhoneDto)
     }
 }
 
@@ -42,5 +46,6 @@ extension UserController: RouteCollection {
         
         group.post(User.self, use: self.create)
         authGroup.get(use: self.index)
+        authGroup.post(ConfirmPhoneDto.self, use: self.confirm)
     }
 }
