@@ -18,7 +18,7 @@ class DefaultUserService: UserService {
         
         let refreshTokenModel = RefreshToken(token: refreshToken, userID: try user.requireID())
         
-        let userForm = User.Form(firstName: user.firstName, lastName: user.lastName, phoneNumber: user.phoneNumber)
+        let userForm = User.Form(user: user)
         let accessDto = AccessDto(accessToken: accessToken, refreshToken: refreshToken, expiredAt: try TokenHelpers.expiredDate(of: accessToken), userData: userForm)
         
         return refreshTokenModel.save(on: request).transform(to: accessDto)

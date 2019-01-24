@@ -16,9 +16,19 @@ final class User: PostgreSQLModel {
         
         // MARK: - Instance Properties
         
+        let id: Int?
         let firstName: String
         let lastName: String
         let phoneNumber: String
+        
+        // MARK: - Initializers
+        
+        init(user: User) {
+            self.id = user.id
+            self.firstName = user.firstName
+            self.lastName = user.lastName
+            self.phoneNumber = user.phoneNumber
+        }
     }
     
     // MARK: - Instance Properties
