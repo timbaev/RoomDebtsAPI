@@ -27,6 +27,7 @@ final class User: PostgreSQLModel {
     var firstName: String
     var lastName: String
     var phoneNumber: String
+    
     var isConfirmed = false
     
     // MARK: - Initializers

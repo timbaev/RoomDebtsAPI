@@ -11,5 +11,6 @@ struct ConfirmPhoneDto: Content {
     
     // MARK: - Instance Properties
     
+    let phoneNumber: String
     let code: String
 }

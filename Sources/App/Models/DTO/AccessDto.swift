@@ -14,4 +14,5 @@ struct AccessDto: Content {
     let accessToken: String?
     let refreshToken: String
     let expiredAt: Date?
+    let userData: User.Form?
 }

@@ -37,11 +37,20 @@ public func configure(_ config: inout Config, _ env: inout Environment, _ servic
     databases.add(database: postgres, as: .psql)
     services.register(databases)
     
+    // MARK: - Migrations
+    
     var migrations = MigrationConfig()
     
     migrations.add(model: User.self, database: .psql)
     migrations.add(model: RefreshToken.self, database: .psql)
+    migrations.add(model: VerificationCode.self, database: .psql)
     
     services.register(migrations)
     
+    // MARK: - Commands
+    
+    var commands = CommandConfig.default()
+    commands.useFluentCommands()
+    
+    services.register(commands)
 }
