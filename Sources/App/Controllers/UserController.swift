@@ -49,6 +49,8 @@ extension UserController: RouteCollection {
         let authGroup = group.grouped(JWTMiddleware())
         
         group.post(User.Form.self, use: self.create)
+        group.post(AccessDto.self, at: "/token", use: self.refreshToken)
+        
         authGroup.get(use: self.index)
         authGroup.post(ConfirmPhoneDto.self, at: "/confirm", use: self.confirm)
     }
