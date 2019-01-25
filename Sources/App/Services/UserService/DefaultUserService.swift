@@ -37,11 +37,18 @@ class DefaultUserService: UserService {
                     
                     let userID = try existingUser.requireID()
                     
-                    return VerificationCode.query(on: request).filter(\.userID == userID).first().unwrap(or: Abort(.badRequest, reason: "Verification Code not found")).flatMap { verificationCode in
-                        verificationCode.update()
-                        
-                        return verificationCode.update(on: request).then { savedVerificatioCode in
-                            return existingUser.update(on: request).transform(to: ResponseDto(message: "Account updated successfully"))
+                    return VerificationCode
+                        .query(on: request)
+                        .filter(\.userID == userID)
+                        .first()
+                        .unwrap(or: Abort(.badRequest, reason: "Verification code not found"))
+                        .flatMap { verificationCode in
+                            verificationCode.update()
+
+                            return verificationCode.update(on: request).then { savedVerificatioCode in
+                                return existingUser
+                                    .update(on: request)
+                                    .transform(to: ResponseDto(message: "Account updated successfully"))
                         }
                     }
                 } else {
@@ -53,7 +60,9 @@ class DefaultUserService: UserService {
                 return user.save(on: request).flatMap { savedUser in
                     let verificationCode = try VerificationCode(userID: savedUser.requireID())
                     
-                    return verificationCode.save(on: request).transform(to: ResponseDto(message: "Account created successfully"))
+                    return verificationCode
+                        .save(on: request)
+                        .transform(to: ResponseDto(message: "Account created successfully"))
                 }
             }
         }
@@ -64,23 +73,33 @@ class DefaultUserService: UserService {
     }
     
     func confirm(_ request: Request, confirmPhoneDto: ConfirmPhoneDto) throws -> Future<AccessDto> {
-        return User.query(on: request).filter(\.phoneNumber == confirmPhoneDto.phoneNumber).first().unwrap(or: Abort(.badRequest, reason: "User with phone number \(confirmPhoneDto.phoneNumber) not found")).flatMap { user in
-            let userID = try user.requireID()
-            
-            return VerificationCode.query(on: request).filter(\.userID == userID).first().unwrap(or: Abort(.badRequest, reason: "Verification Code not found")).flatMap { verificationCode in
-                guard verificationCode.expiredAt > Date() else {
-                    throw Abort(.badRequest, reason: "Verification code expired")
-                }
+        return User
+            .query(on: request)
+            .filter(\.phoneNumber == confirmPhoneDto.phoneNumber)
+            .first()
+            .unwrap(or: Abort(.badRequest, reason: "User with phone number \(confirmPhoneDto.phoneNumber) not found"))
+            .flatMap { user in
+                let userID = try user.requireID()
                 
-                guard verificationCode.code == confirmPhoneDto.code else {
-                    throw Abort(.badRequest, reason: "Invalid confirmation code")
-                }
-                
-                user.isConfirmed = true
-                
-                return verificationCode.delete(on: request).then {
-                    return user.update(on: request).flatMap { savedUser in
-                        return try self.createTokens(for: savedUser, on: request)
+                return VerificationCode
+                    .query(on: request)
+                    .filter(\.userID == userID)
+                    .first()
+                    .unwrap(or: Abort(.badRequest, reason: "Verification Code not found"))
+                    .flatMap { verificationCode in
+                        guard verificationCode.expiredAt > Date() else {
+                            throw Abort(.badRequest, reason: "Verification code expired")
+                        }
+                    
+                        guard verificationCode.code == confirmPhoneDto.code else {
+                            throw Abort(.badRequest, reason: "Invalid confirmation code")
+                        }
+                    
+                        user.isConfirmed = true
+                    
+                        return verificationCode.delete(on: request).then {
+                            return user.update(on: request).flatMap { savedUser in
+                                return try self.createTokens(for: savedUser, on: request)
                     }
                 }
             }
@@ -88,7 +107,11 @@ class DefaultUserService: UserService {
     }
     
     func refreshToken(_ request: Request, accessDto: AccessDto) throws -> Future<AccessDto> {
-        let refreshTokenModel = RefreshToken.query(on: request).filter(\.token == accessDto.refreshToken).first().unwrap(or: Abort(.unauthorized))
+        let refreshTokenModel = RefreshToken
+            .query(on: request)
+            .filter(\.token == accessDto.refreshToken)
+            .first()
+            .unwrap(or: Abort(.unauthorized))
         
         return refreshTokenModel.flatMap { refreshTokenModel in
             if refreshTokenModel.token == accessDto.refreshToken, refreshTokenModel.expiredAt > Date() {
@@ -107,6 +130,31 @@ class DefaultUserService: UserService {
                 }
             } else {
                 throw Abort(.unauthorized)
+            }
+        }
+    }
+    
+    func signIn(phoneNumberDto: PhoneNumberDto, request: Request) throws -> Future<ResponseDto> {
+       return User
+        .query(on: request)
+        .filter(\.phoneNumber == phoneNumberDto.phoneNumber)
+        .first()
+        .unwrap(or: Abort(.badRequest, reason: "User with phone number \(phoneNumberDto.phoneNumber) not found"))
+        .flatMap { user in
+            let userID = try user.requireID()
+            
+            return VerificationCode.query(on: request).filter(\.userID == userID).first().then { verificationCode in
+                if let verificationCode = verificationCode {
+                    verificationCode.update()
+                    
+                    return verificationCode
+                        .update(on: request)
+                        .transform(to: ResponseDto(message: "Verification code sent"))
+                } else {
+                    return VerificationCode(userID: userID)
+                        .save(on: request)
+                        .transform(to: ResponseDto(message: "Verification code sent"))
+                }
             }
         }
     }

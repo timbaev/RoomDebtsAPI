@@ -36,6 +36,10 @@ final class UserController {
     func refreshToken(_ request: Request, accessDto: AccessDto) throws -> Future<AccessDto> {
         return try self.userService.refreshToken(request, accessDto: accessDto)
     }
+    
+    func signIn(_ request: Request, phoneNumberDto: PhoneNumberDto) throws -> Future<ResponseDto> {
+        return try self.userService.signIn(phoneNumberDto: phoneNumberDto, request: request)
+    }
 }
 
 // MARK: - RouteCollection
@@ -51,6 +55,7 @@ extension UserController: RouteCollection {
         group.post(User.Form.self, use: self.create)
         group.post(AccessDto.self, at: "/token", use: self.refreshToken)
         group.post(ConfirmPhoneDto.self, at: "/confirm", use: self.confirm)
+        group.post(PhoneNumberDto.self, at: "/login", use: self.signIn)
         
         authGroup.get(use: self.index)
     }
