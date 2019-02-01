@@ -13,7 +13,7 @@ class DefaultUserService: UserService {
     // MARK: - Instance Methods
     
     fileprivate func createTokens(for user: User, on request: Request) throws -> Future<AccessDto> {
-        let accessToken = try TokenHelpers.createJWT(from: user)
+        let accessToken = try TokenHelpers.createAccessToken(from: user)
         let refreshToken = TokenHelpers.createRefreshToken()
         
         let refreshTokenModel = RefreshToken(token: refreshToken, userID: try user.requireID())
@@ -117,7 +117,7 @@ class DefaultUserService: UserService {
             if refreshTokenModel.token == accessDto.refreshToken, refreshTokenModel.expiredAt > Date() {
                 
                 return refreshTokenModel.user.get(on: request).flatMap { user in
-                    let accessToken = try TokenHelpers.createJWT(from: user)
+                    let accessToken = try TokenHelpers.createAccessToken(from: user)
                     let refreshToken = TokenHelpers.createRefreshToken()
                     let expiredAt = try TokenHelpers.expiredDate(of: accessToken)
                     

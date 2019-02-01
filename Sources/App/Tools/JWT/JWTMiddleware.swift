@@ -6,21 +6,22 @@
 //
 
 import Vapor
+import JWT
 
 class JWTMiddleware: Middleware {
     
     // MARK: - Instance Methods
     
     func respond(to request: Request, chainingTo next: Responder) throws -> EventLoopFuture<Response> {
-        if let token = request.http.headers.firstValue(name: HTTPHeaderName.authorization) {
+        if let token = request.http.headers[.authorization].first {
             do {
-                try TokenHelpers.tokenIsVerified(token)
+                try TokenHelpers.verifyToken(token)
                 return try next.respond(to: request)
             } catch let error as JWTError {
-                throw Abort(.unauthorized, reason: error.description)
+                throw Abort(.unauthorized, reason: error.reason)
             }
         } else {
-            throw Abort(.unauthorized, reason: "No auth token")
+            throw Abort(.unauthorized, reason: "No Access Token")
         }
     }
 }

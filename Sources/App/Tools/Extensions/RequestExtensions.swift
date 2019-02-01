@@ -13,10 +13,18 @@ extension Request {
     // MARK: - Instance Properties
     
     var token: String {
-        if let token = self.http.headers.firstValue(name: HTTPHeaderName.authorization) {
+        if let token = self.http.headers[.authorization].first {
             return token
         } else {
             return ""
         }
+    }
+    
+    // MARK: - Instance Methods
+    
+    func authorizedUser() throws -> Future<User> {
+        let userID = try TokenHelpers.getUserID(fromPayloadOf: self.token)
+        
+        return User.find(userID, on: self).unwrap(or: Abort(.unauthorized, reason: "Authorized user not found"))
     }
 }

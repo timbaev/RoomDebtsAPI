@@ -14,5 +14,5 @@ enum JWTConfig {
     static let signerKey = "ROOM_DEBTS_JWT_API_SIGNER_KEY"
     static let header = JWTHeader(alg: "HS256", typ: "JWT")
     static let signer = JWTSigner.hs256(key: JWTConfig.signerKey)
-    static let expirationTime = 100
+    static let expirationTime: TimeInterval = 60 * 60 * 24 * 2 // 2 days
 }
