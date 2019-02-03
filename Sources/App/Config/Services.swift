@@ -11,6 +11,6 @@ enum RDServices {
     
     // MARK: - Instance Properties
     
-    static let userService: UserService = DefaultUserService()
-    
+    static let userService: UserService = DefaultUserService(fileService: RDServices.fileService)
+    static let fileService: FileService = DefaultFileService()
 }

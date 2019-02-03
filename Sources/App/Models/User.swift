@@ -20,14 +20,16 @@ final class User: PostgreSQLModel {
         let firstName: String
         let lastName: String
         let phoneNumber: String
+        let imageURL: URL?
         
         // MARK: - Initializers
         
-        init(user: User) {
+        init(user: User, image: FileRecord.Form? = nil) {
             self.id = user.id
             self.firstName = user.firstName
             self.lastName = user.lastName
             self.phoneNumber = user.phoneNumber
+            self.imageURL = image?.publicURL
         }
     }
     
@@ -37,6 +39,7 @@ final class User: PostgreSQLModel {
     var firstName: String
     var lastName: String
     var phoneNumber: String
+    var imageID: FileRecord.ID?
     
     var isConfirmed = false
     
@@ -59,6 +62,10 @@ extension User {
     var refreshTokens: Children<User, RefreshToken> {
         return self.children(\.userID)
     }
+    
+    var image: Parent<User, FileRecord>? {
+        return self.parent(\.imageID)
+    }
 }
 
 // MARK: - Content
@@ -80,3 +87,24 @@ extension User: PostgreSQLMigration {
 
 // MARK: - Parameter
 extension User: Parameter { }
+
+// MARK: - Future
+
+extension Future where T: User {
+    
+    // MARK: - Instance Methods
+    
+    func toForm(on request: Request) -> Future<User.Form> {
+        return self.flatMap(to: User.Form.self, { user in
+            if let image = user.image {
+                return image.get(on: request).map(to: User.Form.self, { fileRecord in
+                    return User.Form(user: user, image: fileRecord.toForm())
+                })
+            } else {
+                return self.map(to: User.Form.self, { user in
+                    return User.Form(user: user)
+                })
+            }
+        })
+    }
+}

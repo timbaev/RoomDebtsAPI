@@ -44,6 +44,9 @@ public func configure(_ config: inout Config, _ env: inout Environment, _ servic
     migrations.add(model: User.self, database: .psql)
     migrations.add(model: RefreshToken.self, database: .psql)
     migrations.add(model: VerificationCode.self, database: .psql)
+    migrations.add(model: FileRecord.self, database: .psql)
+    
+    migrations.add(migration: AvatarImageMigration.self, database: .psql)
     migrations.add(migration: UniqueUserIdMigration.self, database: .psql)
     
     services.register(migrations)
@@ -54,4 +57,8 @@ public func configure(_ config: inout Config, _ env: inout Environment, _ servic
     commands.useFluentCommands()
     
     services.register(commands)
+    
+    // MARK: - NIOServerConfig
+    
+    services.register(NIOServerConfig.default(maxBodySize: 20_000_000))
 }

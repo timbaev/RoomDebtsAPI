@@ -7,8 +7,19 @@
 
 import Vapor
 import FluentPostgreSQL
+import Crypto
 
 class DefaultUserService: UserService {
+    
+    // MARK: - Instance Properties
+    
+    var fileService: FileService
+    
+    // MARK: - Initializers
+    
+    init(fileService: FileService) {
+        self.fileService = fileService
+    }
     
     // MARK: - Instance Methods
     
@@ -155,6 +166,23 @@ class DefaultUserService: UserService {
                         .save(on: request)
                         .transform(to: ResponseDto(message: "Verification code sent"))
                 }
+            }
+        }
+    }
+    
+    // MARK: -
+    
+    func uploadAvatarImage(request: Request, file: File) throws -> Future<User.Form> {
+        return try request.authorizedUser().flatMap { user in
+            
+            if let userImage = user.image {
+                return userImage.get(on: request).flatMap { fileRecord in
+                    return try self.fileService.remove(request: request, fileRecord: fileRecord).flatMap {
+                        return try self.fileService.uploadImage(request: request, file: file, user: user)
+                    }
+                }
+            } else {
+                return try self.fileService.uploadImage(request: request, file: file, user: user)
             }
         }
     }

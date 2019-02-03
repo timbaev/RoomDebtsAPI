@@ -16,5 +16,5 @@ protocol UserService {
     func confirm(_ request: Request, confirmPhoneDto: ConfirmPhoneDto) throws -> Future<AccessDto>
     func refreshToken(_ request: Request, accessDto: AccessDto) throws -> Future<AccessDto>
     func signIn(phoneNumberDto: PhoneNumberDto, request: Request) throws -> Future<ResponseDto>
-    
+    func uploadAvatarImage(request: Request, file: File) throws -> Future<User.Form>
 }

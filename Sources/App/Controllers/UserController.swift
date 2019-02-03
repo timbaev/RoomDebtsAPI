@@ -40,6 +40,12 @@ final class UserController {
     func signIn(_ request: Request, phoneNumberDto: PhoneNumberDto) throws -> Future<ResponseDto> {
         return try self.userService.signIn(phoneNumberDto: phoneNumberDto, request: request)
     }
+    
+    func uploadImage(_ request: Request) throws -> Future<User.Form> {
+        return try request.content.decode(File.self).flatMap { file in
+            return try self.userService.uploadAvatarImage(request: request, file: file)
+        }
+    }
 }
 
 // MARK: - RouteCollection
@@ -58,5 +64,6 @@ extension UserController: RouteCollection {
         group.post(PhoneNumberDto.self, at: "/login", use: self.signIn)
         
         authGroup.get(use: self.index)
+        authGroup.post("/avatar", use: self.uploadImage)
     }
 }
