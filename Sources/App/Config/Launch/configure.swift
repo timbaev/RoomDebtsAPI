@@ -42,12 +42,10 @@ public func configure(_ config: inout Config, _ env: inout Environment, _ servic
     var migrations = MigrationConfig()
     
     migrations.add(model: User.self, database: .psql)
+    migrations.add(model: FileRecord.self, database: .psql)
     migrations.add(model: RefreshToken.self, database: .psql)
     migrations.add(model: VerificationCode.self, database: .psql)
-    migrations.add(model: FileRecord.self, database: .psql)
-    
-    migrations.add(migration: AvatarImageMigration.self, database: .psql)
-    migrations.add(migration: UniqueUserIdMigration.self, database: .psql)
+    migrations.add(model: Conversation.self, database: .psql)
     
     services.register(migrations)
     

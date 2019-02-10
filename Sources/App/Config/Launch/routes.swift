@@ -18,4 +18,10 @@ public func routes(_ router: Router) throws {
     let fileController = FileController(fileService: RDServices.fileService)
     
     try router.register(collection: fileController)
+    
+    // MARK: - ConversationController
+    
+    let conversationController = ConversationController(conversationService: RDServices.conversationService)
+    
+    try router.register(collection: conversationController)
 }

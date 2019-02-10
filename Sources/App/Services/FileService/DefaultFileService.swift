@@ -6,6 +6,7 @@
 //
 
 import Vapor
+import Crypto
 
 class DefaultFileService: FileService {
     

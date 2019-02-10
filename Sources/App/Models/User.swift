@@ -66,6 +66,18 @@ extension User {
     var image: Parent<User, FileRecord>? {
         return self.parent(\.imageID)
     }
+    
+    var asCreatorConversations: Children<User, Conversation> {
+        return self.children(\.creatorID)
+    }
+    
+    var asOpponentConversations: Children<User, Conversation> {
+        return self.children(\.opponentID)
+    }
+    
+    var asDebtorConversations: Children<User, Conversation> {
+        return self.children(\.debtorID)
+    }
 }
 
 // MARK: - Content
