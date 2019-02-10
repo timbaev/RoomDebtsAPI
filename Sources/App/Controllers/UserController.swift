@@ -21,10 +21,6 @@ final class UserController {
     
     // MARK: - Instance Methods
     
-    func index(_ request: Request) throws -> Future<[User]> {
-        return try self.userService.fetch(request: request)
-    }
-    
     func create(_ request: Request, userForm: User.Form) throws -> Future<ResponseDto> {
         return try self.userService.create(userForm: userForm, request: request)
     }
@@ -63,7 +59,6 @@ extension UserController: RouteCollection {
         group.post(ConfirmPhoneDto.self, at: "/confirm", use: self.confirm)
         group.post(PhoneNumberDto.self, at: "/login", use: self.signIn)
         
-        authGroup.get(use: self.index)
         authGroup.post("/avatar", use: self.uploadImage)
     }
 }

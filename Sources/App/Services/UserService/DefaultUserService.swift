@@ -79,10 +79,6 @@ class DefaultUserService: UserService {
         }
     }
     
-    func fetch(request: Request) throws -> Future<[User]> {
-        return User.query(on: request).all()
-    }
-    
     func confirm(_ request: Request, confirmPhoneDto: ConfirmPhoneDto) throws -> Future<AccessDto> {
         return User
             .query(on: request)
