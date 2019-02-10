@@ -7,46 +7,46 @@
 
 import Vapor
 
-final class UserController {
+final class AccountController {
     
     // MARK: - Instance Properties
     
-    var userService: UserService
+    var accountService: AccountService
     
     // MARK: - Initializers
     
-    init(userService: UserService) {
-        self.userService = userService
+    init(accountService: AccountService) {
+        self.accountService = accountService
     }
     
     // MARK: - Instance Methods
     
     func create(_ request: Request, userForm: User.Form) throws -> Future<ResponseDto> {
-        return try self.userService.create(userForm: userForm, request: request)
+        return try self.accountService.create(userForm: userForm, request: request)
     }
     
     func confirm(_ request: Request, confirmPhoneDto: ConfirmPhoneDto) throws -> Future<AccessDto> {
-        return try self.userService.confirm(request, confirmPhoneDto: confirmPhoneDto)
+        return try self.accountService.confirm(request, confirmPhoneDto: confirmPhoneDto)
     }
     
     func refreshToken(_ request: Request, accessDto: AccessDto) throws -> Future<AccessDto> {
-        return try self.userService.refreshToken(request, accessDto: accessDto)
+        return try self.accountService.refreshToken(request, accessDto: accessDto)
     }
     
     func signIn(_ request: Request, phoneNumberDto: PhoneNumberDto) throws -> Future<ResponseDto> {
-        return try self.userService.signIn(phoneNumberDto: phoneNumberDto, request: request)
+        return try self.accountService.signIn(phoneNumberDto: phoneNumberDto, request: request)
     }
     
     func uploadImage(_ request: Request) throws -> Future<User.Form> {
         return try request.content.decode(File.self).flatMap { file in
-            return try self.userService.uploadAvatarImage(request: request, file: file)
+            return try self.accountService.uploadAvatarImage(request: request, file: file)
         }
     }
 }
 
 // MARK: - RouteCollection
 
-extension UserController: RouteCollection {
+extension AccountController: RouteCollection {
     
     // MARK: - Instance Methods
     

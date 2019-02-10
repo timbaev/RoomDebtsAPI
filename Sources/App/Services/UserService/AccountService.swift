@@ -7,7 +7,7 @@
 
 import Vapor
 
-protocol UserService {
+protocol AccountService {
     
     // MARK: - Instance Methods
     

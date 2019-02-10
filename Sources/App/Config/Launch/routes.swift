@@ -9,9 +9,9 @@ public func routes(_ router: Router) throws {
     
     // MARK: - UserController
     
-    let userController = UserController(userService: RDServices.userService)
+    let accountController = AccountController(accountService: RDServices.accountService)
     
-    try router.register(collection: userController)
+    try router.register(collection: accountController)
     
     // MARK: - FileController
     

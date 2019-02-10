@@ -1,5 +1,5 @@
 //
-//  DefaultUserService.swift
+//  DefaultAccountService.swift
 //  App
 //
 //  Created by Timur Shafigullin on 20/01/2019.
@@ -9,7 +9,7 @@ import Vapor
 import FluentPostgreSQL
 import Crypto
 
-class DefaultUserService: UserService {
+class DefaultAccountService: AccountService {
     
     // MARK: - Instance Properties
     
