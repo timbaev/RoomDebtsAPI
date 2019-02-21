@@ -27,6 +27,12 @@ final class FileRecord: Object {
         return ["files"]
     }
     
+    // MARK: - Type Methods
+    
+    static func publicURL(withID id: FileRecord.ID) -> URL? {
+        return URL(string: Environment.PUBLIC_URL)?.appendingPathComponent("\(FileRecord.path.convertToPathComponents().readable)/\(id)")
+    }
+    
     // MARK: - Instance Properties
     
     var id: Int?
@@ -46,9 +52,7 @@ final class FileRecord: Object {
     
     func toForm() -> Form {
         if let id = self.id {
-            let host = Environment.PUBLIC_URL
-            
-            let publicURL = URL(string: host)?.appendingPathComponent("\(FileRecord.path.convertToPathComponents().readable)/\(id)")
+            let publicURL = FileRecord.publicURL(withID: id)
             
             return Form(filename: self.filename, fileKind: self.fileKind, publicURL: publicURL)
         }

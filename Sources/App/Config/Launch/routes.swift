@@ -7,7 +7,7 @@ fileprivate enum BasePath {
 /// Register your application's routes here.
 public func routes(_ router: Router) throws {
     
-    // MARK: - UserController
+    // MARK: - AccountController
     
     let accountController = AccountController(accountService: RDServices.accountService)
     
@@ -24,4 +24,10 @@ public func routes(_ router: Router) throws {
     let conversationController = ConversationController(conversationService: RDServices.conversationService)
     
     try router.register(collection: conversationController)
+    
+    // MARK: - UserController
+    
+    let userController = UserController(userService: RDServices.userService)
+    
+    try router.register(collection: userController)
 }

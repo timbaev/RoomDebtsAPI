@@ -33,6 +33,30 @@ final class User: PostgreSQLModel {
         }
     }
     
+    // MARK: -
+    
+    struct SearchForm: Content {
+        
+        // MARK: - Instance Properties
+        
+        let id: Int?
+        let firstName: String
+        let lastName: String
+        let imageURL: URL?
+        
+        init(user: User) {
+            self.id = user.id
+            self.firstName = user.firstName
+            self.lastName = user.lastName
+            
+            if let imageID = user.imageID {
+                self.imageURL = FileRecord.publicURL(withID: imageID)
+            } else {
+                self.imageURL = nil
+            }
+        }
+    }
+    
     // MARK: - Instance Properties
 
     var id: Int?
