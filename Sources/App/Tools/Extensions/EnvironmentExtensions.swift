@@ -12,7 +12,7 @@ extension Environment {
     // MARK: - Type Properties
     
     static var PUBLIC_URL: String {
-        return Environment.get("PUBLIC_URL") ?? "localhost:\(Environment.PORT)"
+        return Environment.get("PUBLIC_URL") ?? "http://localhost:\(Environment.PORT)"
     }
     
     static var PORT: Int {
