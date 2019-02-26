@@ -11,5 +11,5 @@ protocol UserService {
     
     // MARK: - Instance Methods
     
-    func search(request: Request, keyword: String) -> Future<[User.SearchForm]>
+    func search(request: Request, keyword: String) -> Future<[User.PublicForm]>
 }

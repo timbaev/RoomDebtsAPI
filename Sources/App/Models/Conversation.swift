@@ -33,8 +33,8 @@ final class Conversation: Object {
         // MARK: - Instance Properties
         
         let id: Int?
-        let creatorID: Int
-        let opponentID: Int
+        let creator: User.PublicForm
+        let opponent: User.PublicForm
         let status: String
         let price: Double
         let debtorID: Int?
@@ -67,12 +67,6 @@ final class Conversation: Object {
         self.price = price
         self.debtorID = debtorID
     }
-    
-    // MARK: - Instance Methods
-    
-    func toForm() -> Form {
-        return Form(id: self.id, creatorID: self.creatorID, opponentID: self.opponentID, status: self.status.rawValue, price: self.price, debtorID: self.debtorID)
-    }
 }
 
 // MARK: -
@@ -104,18 +98,5 @@ extension Conversation {
         return Database.create(Conversation.self, on: connection) { builder in
             builder.field(for: \.status, type: .text)
         }
-    }
-}
-
-// MARK: - Future
-
-extension Future where T: Conversation {
-    
-    // MARK: - Instance Methods
-    
-    func toForm() -> Future<Conversation.Form> {
-        return self.map(to: Conversation.Form.self, { conversation in
-            return conversation.toForm()
-        })
     }
 }

@@ -13,13 +13,13 @@ class DefaultUserService: UserService {
     
     // MARK: - Instance Methods
     
-    func search(request: Request, keyword: String) -> Future<[User.SearchForm]> {
+    func search(request: Request, keyword: String) -> Future<[User.PublicForm]> {
         return User.query(on: request).group(.or, closure: { builder in
             builder.filter(\.firstName, .ilike, keyword)
                 .filter(\.lastName, .ilike, keyword)
                 .filter(\.phoneNumber, .ilike, keyword)
-        }).all().map(to: [User.SearchForm].self, { users in
-            return users.map { User.SearchForm(user: $0) }
+        }).all().map(to: [User.PublicForm].self, { users in
+            return users.map { User.PublicForm(user: $0) }
         })
     }
 }

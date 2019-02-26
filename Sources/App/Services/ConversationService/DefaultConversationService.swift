@@ -30,7 +30,25 @@ class DefaultConversationService: ConversationService {
                         throw Abort(.badRequest, reason: "Conversation with \(opponent.firstName) \(opponent.lastName) already exists")
                     }
                     
-                    return Conversation(creatorID: userID, opponentID: opponentID).save(on: request).toForm()
+                    return Conversation(creatorID: userID, opponentID: opponentID)
+                        .save(on: request)
+                        .flatMap { savedConversation in
+                            return savedConversation
+                                .creator
+                                .get(on: request)
+                                .and(savedConversation.opponent.get(on: request))
+                                .flatMap { (creator, opponent) in
+                                    let creatorPublicForm = User.PublicForm(user: creator)
+                                    let opponentPublicForm = User.PublicForm(user: opponent)
+
+                                    return request.future(Conversation.Form(id: savedConversation.id,
+                                                                            creator: creatorPublicForm,
+                                                                            opponent: opponentPublicForm,
+                                                                            status: savedConversation.status.rawValue,
+                                                                            price: savedConversation.price,
+                                                                            debtorID: savedConversation.debtorID))
+                        }
+                    }
                 }
             }
         }

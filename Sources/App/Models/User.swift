@@ -35,7 +35,7 @@ final class User: PostgreSQLModel {
     
     // MARK: -
     
-    struct SearchForm: Content {
+    struct PublicForm: Content {
         
         // MARK: - Instance Properties
         
