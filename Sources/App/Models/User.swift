@@ -36,6 +36,19 @@ final class User: PostgreSQLModel {
     // MARK: -
     
     struct PublicForm: Content {
+
+        // MARK: - Nested Types
+
+        private enum CodingKeys: String, CodingKey {
+
+            // MARK: - Enumeration Cases
+
+            case id
+            case firstName
+            case lastName
+            case imageURL
+            case imageID
+        }
         
         // MARK: - Instance Properties
         
@@ -43,6 +56,8 @@ final class User: PostgreSQLModel {
         let firstName: String
         let lastName: String
         let imageURL: URL?
+
+        // MARK: - Initializers
         
         init(user: User) {
             self.id = user.id
@@ -54,6 +69,31 @@ final class User: PostgreSQLModel {
             } else {
                 self.imageURL = nil
             }
+        }
+
+        public init(from decoder: Decoder) throws {
+            let keyedContainer = try decoder.container(keyedBy: CodingKeys.self)
+
+            self.id = try keyedContainer.decodeIfPresent(Int.self, forKey: .id)
+            self.firstName = try keyedContainer.decode(String.self, forKey: .firstName)
+            self.lastName = try keyedContainer.decode(String.self, forKey: .lastName)
+
+            if let imageID = try keyedContainer.decodeIfPresent(Int.self, forKey: .imageID) {
+                self.imageURL = FileRecord.publicURL(withID: imageID)
+            } else {
+                self.imageURL = nil
+            }
+        }
+
+        // MARK: - Encodable
+
+        func encode(to encoder: Encoder) throws {
+            var container = encoder.container(keyedBy: CodingKeys.self)
+
+            try container.encodeIfPresent(self.id, forKey: .id)
+            try container.encode(self.firstName, forKey: .firstName)
+            try container.encode(self.lastName, forKey: .lastName)
+            try container.encodeIfPresent(self.imageURL, forKey: .imageURL)
         }
     }
     

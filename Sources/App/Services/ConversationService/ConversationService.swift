@@ -12,4 +12,5 @@ protocol ConversationService {
     // MARK: - Instance Methods
     
     func create(request: Request, createForm: Conversation.CreateForm) throws -> Future<Conversation.Form>
+    func fetch(request: Request) throws -> Future<[Conversation.Form]>
 }

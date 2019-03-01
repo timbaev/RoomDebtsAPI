@@ -7,6 +7,7 @@
 
 import Vapor
 import FluentPostgreSQL
+import FluentQuery
 
 class DefaultConversationService: ConversationService {
     
@@ -50,6 +51,29 @@ class DefaultConversationService: ConversationService {
                         }
                     }
                 }
+            }
+        }
+    }
+
+    func fetch(request: Request) throws -> Future<[Conversation.Form]> {
+        return try request.authorizedUser().flatMap { user in
+            let userID = try user.requireID()
+
+            return request.requestPooledConnection(to: .psql).flatMap { conn -> Future<[Conversation.Form]> in
+                defer { try? request.releasePooledConnection(conn, to: .psql) }
+
+                let creator = User.alias(short: "creator")
+                let opponent = User.alias(short: "opponent")
+
+                return try FQL().select(all: Conversation.self)
+                    .select(.row(creator), as: "creator")
+                    .select(.row(opponent), as: "opponent")
+                    .from(Conversation.self)
+                    .join(.inner, creator, where: creator.k(\.id) == \Conversation.creatorID)
+                    .join(.inner, opponent, where: opponent.k(\.id) == \Conversation.opponentID)
+                    .where(FQWhere(\Conversation.creatorID == userID).or(\Conversation.opponentID == userID))
+                    .execute(on: conn)
+                    .decode(Conversation.Form.self)
             }
         }
     }

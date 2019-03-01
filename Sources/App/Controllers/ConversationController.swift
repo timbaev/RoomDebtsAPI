@@ -24,6 +24,10 @@ final class ConversationController {
     func create(_ request: Request, createForm: Conversation.CreateForm) throws -> Future<Conversation.Form> {
         return try self.conversationService.create(request: request, createForm: createForm)
     }
+
+    func fetch(_ request: Request) throws -> Future<[Conversation.Form]> {
+        return try self.conversationService.fetch(request: request)
+    }
 }
 
 // MARK: - RouteCollection
@@ -36,5 +40,6 @@ extension ConversationController: RouteCollection {
         let group = router.grouped("v1/conversations").grouped(Logger()).grouped(JWTMiddleware())
         
         group.post(Conversation.CreateForm.self, use: self.create)
+        group.get(use: self.fetch)
     }
 }
