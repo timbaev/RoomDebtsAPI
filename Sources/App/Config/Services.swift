@@ -15,4 +15,5 @@ enum RDServices {
     static let fileService: FileService = DefaultFileService()
     static let conversationService: ConversationService = DefaultConversationService()
     static let userService: UserService = DefaultUserService()
+    static let debtService: DebtService = DefaultDebtService()
 }

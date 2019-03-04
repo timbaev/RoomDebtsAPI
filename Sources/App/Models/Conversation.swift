@@ -86,6 +86,10 @@ extension Conversation {
     var debtor: Parent<Conversation, User>? {
         return self.parent(\.debtorID)
     }
+
+    var debts: Children<Conversation, Debt> {
+        return self.children(\.conversationID)
+    }
 }
 
 // MARK: - Migration

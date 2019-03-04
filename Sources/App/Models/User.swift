@@ -142,6 +142,14 @@ extension User {
     var asDebtorConversations: Children<User, Conversation> {
         return self.children(\.debtorID)
     }
+
+    var asCreatorDebts: Children<User, Debt> {
+        return self.children(\.creatorID)
+    }
+
+    var asDebtorDebts: Children<User, Debt> {
+        return self.children(\.debtorID)
+    }
 }
 
 // MARK: - Content
