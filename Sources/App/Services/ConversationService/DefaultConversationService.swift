@@ -77,4 +77,46 @@ class DefaultConversationService: ConversationService {
             }
         }
     }
+
+    func accept(request: Request, conversation: Conversation) throws -> Future<Conversation.Form> {
+        return try request.authorizedUser().flatMap { user in
+            let userID = try user.requireID()
+
+            guard conversation.opponentID == userID else {
+                throw Abort(.badRequest, reason: "User is not opponent of converation")
+            }
+
+            conversation.status = .accepted
+
+            return conversation.save(on: request).flatMap { savedConversation in
+                return savedConversation
+                    .creator
+                    .get(on: request)
+                    .and(savedConversation.opponent.get(on: request))
+                    .flatMap { (creator, opponent) in
+                        let creatorPublicForm = User.PublicForm(user: creator)
+                        let opponentPublicForm = User.PublicForm(user: opponent)
+
+                        return request.future(Conversation.Form(id: savedConversation.id,
+                                                                creator: creatorPublicForm,
+                                                                opponent: opponentPublicForm,
+                                                                status: savedConversation.status.rawValue,
+                                                                price: savedConversation.price,
+                                                                debtorID: savedConversation.debtorID))
+                }
+            }
+        }
+    }
+
+    func reject(request: Request, conversation: Conversation) throws -> Future<Void> {
+        return try request.authorizedUser().flatMap { user in
+            let userID = try user.requireID()
+
+            guard conversation.opponentID == userID else {
+                throw Abort(.badRequest, reason: "User is not opponent of converation")
+            }
+
+            return conversation.delete(on: request)
+        }
+    }
 }

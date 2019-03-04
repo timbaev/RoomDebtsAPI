@@ -28,6 +28,24 @@ final class ConversationController {
     func fetch(_ request: Request) throws -> Future<[Conversation.Form]> {
         return try self.conversationService.fetch(request: request)
     }
+
+    func accept(_ request: Request) throws -> Future<Conversation.Form> {
+        return try request.parameters.next(Conversation.self).flatMap { conversation in
+            return try self.conversationService.accept(request: request, conversation: conversation)
+        }
+    }
+
+    func reject(_ request: Request) throws -> Future<Response> {
+        let response = Response(using: request)
+
+        return try request.parameters.next(Conversation.self).flatMap { conversation in
+            return try self.conversationService.reject(request: request, conversation: conversation).flatMap {
+                response.http.status = .noContent
+
+                return request.future(response)
+            }
+        }
+    }
 }
 
 // MARK: - RouteCollection
@@ -41,5 +59,8 @@ extension ConversationController: RouteCollection {
         
         group.post(Conversation.CreateForm.self, use: self.create)
         group.get(use: self.fetch)
+
+        group.post(Conversation.parameter, "accept", use: self.accept)
+        group.post(Conversation.parameter, "reject", use: self.reject)
     }
 }

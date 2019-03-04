@@ -13,4 +13,7 @@ protocol ConversationService {
     
     func create(request: Request, createForm: Conversation.CreateForm) throws -> Future<Conversation.Form>
     func fetch(request: Request) throws -> Future<[Conversation.Form]>
+
+    func accept(request: Request, conversation: Conversation) throws -> Future<Conversation.Form>
+    func reject(request: Request, conversation: Conversation) throws -> Future<Void>
 }
