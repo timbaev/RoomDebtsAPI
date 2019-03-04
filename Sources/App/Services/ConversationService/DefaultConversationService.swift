@@ -119,4 +119,33 @@ class DefaultConversationService: ConversationService {
             return conversation.delete(on: request)
         }
     }
+
+    func updatePrice(request: Request, debt: Debt, conversation: Conversation) -> Future<Conversation> {
+        let debtorID = debt.debtorID
+        let price = debt.price
+
+        if let conversationDebtorID = conversation.debtorID {
+            if debtorID == conversationDebtorID {
+                conversation.price += price
+            } else {
+                conversation.price -= price
+
+                if conversation.price < 0 {
+                    let opponentID = (conversation.creatorID == debtorID) ? conversation.opponentID : conversation.creatorID
+
+                    conversation.debtorID = opponentID
+                    conversation.price = fabs(conversation.price)
+                }
+            }
+        } else {
+            conversation.price = price
+            conversation.debtorID = debtorID
+        }
+
+        if conversation.price == 0 {
+            conversation.debtorID = nil
+        }
+
+        return conversation.save(on: request)
+    }
 }

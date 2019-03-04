@@ -12,6 +12,25 @@ final class Debt: Object {
 
     // MARK: - Nested Types
 
+    public enum Status: String, ReflectionDecodable, Codable {
+
+        // MARK: - Enumeration Cases
+
+        case accepted
+        case newRequest
+        case editRequest
+        case closeRequest
+        case deleteRequest
+
+        // MARK: - Type Methods
+
+        public static func reflectDecoded() throws -> (Debt.Status, Debt.Status) {
+            return (.accepted, .deleteRequest)
+        }
+    }
+
+    // MARK: -
+
     struct Form: Content {
 
         // MARK: - Instance Properties
@@ -22,6 +41,7 @@ final class Debt: Object {
         var description: String?
         var creator: User.PublicForm
         var debtorID: Int
+        var status: String
 
         init(debt: Debt, creator: User.PublicForm) {
             self.id = debt.id
@@ -30,6 +50,7 @@ final class Debt: Object {
             self.description = debt.description
             self.creator = creator
             self.debtorID = debt.debtorID
+            self.status = debt.status.rawValue
         }
     }
 
@@ -52,19 +73,21 @@ final class Debt: Object {
     var price: Double
     var date: Date
     var description: String?
+    var status: Status
     var creatorID: User.ID
     var debtorID: User.ID
     var conversationID: Conversation.ID
 
     // MARK: - Initializers
 
-    init(price: Double = 0.0, date: Date, description: String? = nil, creatorID: User.ID, debtorID: User.ID, conversationID: Conversation.ID) {
+    init(price: Double, date: Date, description: String? = nil, creatorID: User.ID, debtorID: User.ID, conversationID: Conversation.ID, status: Debt.Status = .newRequest) {
         self.price = price
         self.date = date
         self.description = description
         self.creatorID = creatorID
         self.debtorID = debtorID
         self.conversationID = conversationID
+        self.status = status
     }
 
     convenience init(form: Debt.CreateForm, creatorID: User.ID) {

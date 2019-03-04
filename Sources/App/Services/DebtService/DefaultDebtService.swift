@@ -9,6 +9,16 @@ import Vapor
 
 class DefaultDebtService: DebtService {
 
+    // MARK: - Instance Properties
+
+    private var conversationService: ConversationService
+
+    // MARK: - Initializers
+
+    init(conversationService: ConversationService) {
+        self.conversationService = conversationService
+    }
+
     // MARK: - Instance Methods
 
     func create(request: Request, form: Debt.CreateForm) throws -> Future<Debt.Form> {
@@ -25,6 +35,10 @@ class DefaultDebtService: DebtService {
 
                     guard conversation.creatorID == userID || conversation.opponentID == userID else {
                         throw Abort(.badRequest, reason: "Creator is not participant")
+                    }
+
+                    guard conversation.status == .accepted else {
+                        throw Abort(.badRequest, reason: "Conversation is not accepted")
                     }
 
                     return Debt(form: form, creatorID: userID).save(on: request).map { debt in
