@@ -24,7 +24,7 @@ final class UserController {
     func search(_ request: Request) throws -> Future<[User.PublicForm]> {
         let keyword = try request.parameters.next(String.self)
         
-        return self.userService.search(request: request, keyword: keyword)
+        return try self.userService.search(request: request, keyword: keyword)
     }
 }
 
