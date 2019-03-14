@@ -24,6 +24,14 @@ final class DebtController {
     func create(_ request: Request, createForm: Debt.CreateForm) throws -> Future<Debt.Form> {
         return try self.debtService.create(request: request, form: createForm)
     }
+
+    func fetch(_ request: Request) throws -> Future<[Debt.Form]> {
+        guard let conversationID = request.query[Int.self, at: "conversationID"] else {
+            throw Abort(.badRequest)
+        }
+
+        return try self.debtService.fetch(request: request, conversationID: conversationID)
+    }
 }
 
 // MARK: - RouteCollection
@@ -36,5 +44,6 @@ extension DebtController: RouteCollection {
         let group = router.grouped("v1/debts").grouped(Logger()).grouped(JWTMiddleware())
 
         group.post(Debt.CreateForm.self, use: self.create)
+        group.get(use: self.fetch)
     }
 }
