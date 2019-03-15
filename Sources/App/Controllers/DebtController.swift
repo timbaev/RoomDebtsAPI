@@ -32,6 +32,24 @@ final class DebtController {
 
         return try self.debtService.fetch(request: request, conversationID: conversationID)
     }
+
+    func accept(_ request: Request) throws -> Future<Debt.Form> {
+        return try request.parameters.next(Debt.self).flatMap { debt in
+            return try self.debtService.accept(on: request, debt: debt)
+        }
+    }
+
+    func reject(_ request: Request) throws -> Future<Response> {
+        let response = Response(using: request)
+
+        return try request.parameters.next(Debt.self).flatMap { debt in
+            return try self.debtService.reject(on: request, debt: debt).map {
+                response.http.status = .noContent
+
+                return response
+            }
+        }
+    }
 }
 
 // MARK: - RouteCollection
@@ -45,5 +63,8 @@ extension DebtController: RouteCollection {
 
         group.post(Debt.CreateForm.self, use: self.create)
         group.get(use: self.fetch)
+
+        group.post(Debt.parameter, "accept", use: self.accept)
+        group.post(Debt.parameter, "reject", use: self.reject)
     }
 }
