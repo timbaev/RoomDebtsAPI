@@ -67,6 +67,10 @@ final class Debt: Object {
         var conversationID: Int
     }
 
+    // MARK: - Type Properties
+
+    static var createdAtKey: TimestampKey? = \.createdAt
+
     // MARK: - Instance Properties
 
     var id: Int?
@@ -77,6 +81,7 @@ final class Debt: Object {
     var creatorID: User.ID
     var debtorID: User.ID
     var conversationID: Conversation.ID
+    var createdAt: Date?
 
     // MARK: - Initializers
 

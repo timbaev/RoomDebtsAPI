@@ -69,6 +69,7 @@ class DefaultDebtService: DebtService {
                             .from(Debt.self)
                             .join(.inner, creator, where: creator.k(\.id) == \Debt.creatorID)
                             .where(\Debt.conversationID == conversationID)
+                            .orderBy(.desc(\Debt.createdAt))
                             .execute(on: conn)
                             .decode(Debt.Form.self)
                     }
