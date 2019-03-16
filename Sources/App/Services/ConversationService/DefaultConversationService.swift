@@ -131,7 +131,7 @@ class DefaultConversationService: ConversationService {
                 conversation.price -= price
 
                 if conversation.price < 0 {
-                    let opponentID = (conversation.creatorID == debtorID) ? conversation.opponentID : conversation.creatorID
+                    let opponentID = (conversation.creatorID == conversation.debtorID) ? conversation.opponentID : conversation.creatorID
 
                     conversation.debtorID = opponentID
                     conversation.price = fabs(conversation.price)
