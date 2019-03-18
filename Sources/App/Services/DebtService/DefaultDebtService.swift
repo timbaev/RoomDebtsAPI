@@ -108,7 +108,7 @@ class DefaultDebtService: DebtService {
                     throw Abort(.badRequest, reason: "User is not participant of conversation")
                 }
 
-                return try self.conversationService.updatePrice(on: request, debt: debt, conversation: conversation).flatMap { _ in
+                return try self.conversationService.updatePrice(on: request, for: .newRequest, debt: debt, conversation: conversation).flatMap { _ in
                     debt.status = .accepted
 
                     return debt.save(on: request).toForm(on: request)
@@ -140,9 +140,7 @@ class DefaultDebtService: DebtService {
             }
 
             if debt.status == .accepted {
-                debt.status = .editRequest
-                
-                return try self.conversationService.updatePrice(on: request, debt: debt, conversation: conversation).flatMap { _ in
+                return try self.conversationService.updatePrice(on: request, for: .editRequest, debt: debt, conversation: conversation).flatMap { _ in
                     return self.updateAndSave(on: request, debt: debt, form: form, creatorID: userID).toForm(on: request)
                 }
             } else {

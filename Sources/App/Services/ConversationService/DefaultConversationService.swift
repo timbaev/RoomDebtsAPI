@@ -170,8 +170,8 @@ class DefaultConversationService: ConversationService {
         }
     }
 
-    func updatePrice(on request: Request, debt: Debt, conversation: Conversation) throws -> Future<Conversation> {
-        switch debt.status {
+    func updatePrice(on request: Request, for type: Debt.Status, debt: Debt, conversation: Conversation) throws -> Future<Conversation> {
+        switch type {
         case .newRequest:
             return self.updatePriceNewRequest(on: request, debt: debt, conversation: conversation)
 
