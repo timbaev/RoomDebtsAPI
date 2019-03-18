@@ -27,8 +27,11 @@ class DefaultDebtService: DebtService {
         debt.date = form.date
         debt.description = form.description
         debt.debtorID = form.debtorID
-        debt.status = .editRequest
         debt.creatorID = creatorID
+
+        if debt.status != .newRequest {
+            debt.status = .editRequest
+        }
 
         return debt.save(on: request)
     }
