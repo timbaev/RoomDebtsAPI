@@ -118,7 +118,15 @@ class DefaultDebtService: DebtService {
     }
 
     func reject(on request: Request, debt: Debt) throws -> Future<Void> {
-        return debt.delete(on: request)
+        switch debt.status {
+        case .newRequest, .editRequest:
+            debt.isRejected = true
+
+            return debt.save(on: request).transform(to: Void())
+
+        case .closeRequest, .deleteRequest, .accepted:
+            throw Abort(.badRequest)
+        }
     }
 
     func update(on request: Request, debt: Debt, form: Debt.CreateForm) throws -> Future<Debt.Form> {

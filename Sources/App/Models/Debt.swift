@@ -42,6 +42,7 @@ final class Debt: Object {
         var creator: User.PublicForm
         var debtorID: Int
         var status: String
+        var isRejected: Bool
 
         init(debt: Debt, creator: User.PublicForm) {
             self.id = debt.id
@@ -51,6 +52,7 @@ final class Debt: Object {
             self.creator = creator
             self.debtorID = debt.debtorID
             self.status = debt.status.rawValue
+            self.isRejected = debt.isRejected
         }
     }
 
@@ -82,6 +84,7 @@ final class Debt: Object {
     var debtorID: User.ID
     var conversationID: Conversation.ID
     var createdAt: Date?
+    var isRejected = false
 
     // MARK: - Initializers
 
