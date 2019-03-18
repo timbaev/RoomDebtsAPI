@@ -36,6 +36,16 @@ class DefaultDebtService: DebtService {
         return debt.save(on: request)
     }
 
+    private func validate(conversation: Conversation, on request: Request) throws {
+        guard conversation.creatorID == request.userID || conversation.opponentID == request.userID else {
+            throw Abort(.badRequest, reason: "User is not participant of conversation")
+        }
+
+        guard conversation.status == .accepted else {
+            throw Abort(.badRequest, reason: "Conversation is not accepted")
+        }
+    }
+
     // MARK: -
 
     func create(request: Request, form: Debt.CreateForm) throws -> Future<Debt.Form> {
@@ -140,7 +150,7 @@ class DefaultDebtService: DebtService {
             }
 
             guard conversation.creatorID == request.userID || conversation.opponentID == request.userID else {
-                throw Abort(.badRequest, reason: "Creator is not participant")
+                throw Abort(.badRequest, reason: "User is not participant of conversation")
             }
 
             guard conversation.status == .accepted else {
@@ -154,6 +164,33 @@ class DefaultDebtService: DebtService {
             } else {
                 return self.updateAndSave(on: request, debt: debt, form: form, creatorID: userID).toForm(on: request)
             }
+        }
+    }
+
+    func deleteRequest(on request: Request, debt: Debt) throws -> Future<Debt.Form> {
+        return debt.conversation.get(on: request).flatMap { conversation in
+            try self.validate(conversation: conversation, on: request)
+
+            guard debt.status != .newRequest else {
+                throw Abort(.badRequest, reason: "Debt should be deleted without request")
+            }
+
+            debt.status = .deleteRequest
+            debt.creatorID = try request.requiredUserID()
+
+            return debt.save(on: request).toForm(on: request)
+        }
+    }
+
+    func delete(on request: Request, debt: Debt) throws -> Future<Void> {
+        return debt.conversation.get(on: request).flatMap { conversation in
+            try self.validate(conversation: conversation, on: request)
+
+            guard debt.status == .newRequest else {
+                throw Abort(.badRequest, reason: "Debt can't be deleted without request")
+            }
+
+            return debt.delete(on: request)
         }
     }
 }

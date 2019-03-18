@@ -56,6 +56,24 @@ final class DebtController {
             return try self.debtService.update(on: request, debt: debt, form: createForm)
         }
     }
+
+    func deleteRequest(_ request: Request) throws -> Future<Debt.Form> {
+        return try request.parameters.next(Debt.self).flatMap { debt in
+            return try self.debtService.deleteRequest(on: request, debt: debt)
+        }
+    }
+
+    func delete(_ request: Request) throws -> Future<Response> {
+        let response = Response(using: request)
+
+        return try request.parameters.next(Debt.self).flatMap { debt in
+            return try self.debtService.delete(on: request, debt: debt).map {
+                response.http.status = .noContent
+
+                return response
+            }
+        }
+    }
 }
 
 // MARK: - RouteCollection
@@ -74,5 +92,8 @@ extension DebtController: RouteCollection {
         group.post(Debt.parameter, "reject", use: self.reject)
 
         group.put(Debt.CreateForm.self, at: Debt.parameter, use: self.update)
+
+        group.delete(Debt.parameter, "request", use: self.deleteRequest)
+        group.delete(Debt.parameter, use: self.delete)
     }
 }

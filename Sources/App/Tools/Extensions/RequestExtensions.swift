@@ -31,4 +31,12 @@ extension Request {
         
         return User.find(userID, on: self).unwrap(or: Abort(.unauthorized, reason: "Authorized user not found"))
     }
+
+    func requiredUserID() throws -> User.ID {
+        guard let userID = self.userID else {
+            throw Abort(.unauthorized)
+        }
+
+        return userID
+    }
 }
