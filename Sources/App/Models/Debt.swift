@@ -118,3 +118,18 @@ extension Debt {
         return self.parent(\.conversationID)
     }
 }
+
+// MARK: - Future
+
+extension Future where T: Debt {
+
+    // MARK: - Instance Methods
+
+    func toForm(on request: Request) -> Future<Debt.Form> {
+        return self.flatMap(to: Debt.Form.self, { debt in
+            return debt.creator.get(on: request).map(to: Debt.Form.self, { creator in
+                return Debt.Form(debt: debt, creator: User.PublicForm(user: creator))
+            })
+        })
+    }
+}

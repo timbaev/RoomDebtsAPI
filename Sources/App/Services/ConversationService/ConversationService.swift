@@ -17,5 +17,5 @@ protocol ConversationService {
     func accept(request: Request, conversation: Conversation) throws -> Future<Conversation.Form>
     func reject(request: Request, conversation: Conversation) throws -> Future<Void>
 
-    func updatePrice(request: Request, debt: Debt, conversation: Conversation) -> Future<Conversation>
+    func updatePrice(on request: Request, debt: Debt, conversation: Conversation) throws -> Future<Conversation>
 }

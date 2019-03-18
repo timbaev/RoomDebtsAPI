@@ -16,4 +16,6 @@ protocol DebtService {
 
     func accept(on request: Request, debt: Debt) throws -> Future<Debt.Form>
     func reject(on request: Request, debt: Debt) throws -> Future<Void>
+
+    func update(on request: Request, debt: Debt, form: Debt.CreateForm) throws -> Future<Debt.Form>
 }

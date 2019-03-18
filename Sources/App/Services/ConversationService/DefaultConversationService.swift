@@ -10,6 +10,56 @@ import FluentPostgreSQL
 import FluentQuery
 
 class DefaultConversationService: ConversationService {
+
+    // MARK: - Instance Methods
+
+    private func updatePriceNewRequest(on request: Request, debt: Debt, conversation: Conversation) -> Future<Conversation> {
+        let debtorID = debt.debtorID
+        let price = debt.price
+
+        if let conversationDebtorID = conversation.debtorID {
+            if debtorID == conversationDebtorID {
+                conversation.price += price
+            } else {
+                conversation.price -= price
+
+                if conversation.price < 0 {
+                    let opponentID = (conversation.creatorID == conversation.debtorID) ? conversation.opponentID : conversation.creatorID
+
+                    conversation.debtorID = opponentID
+                    conversation.price = fabs(conversation.price)
+                }
+            }
+        } else {
+            conversation.price = price
+            conversation.debtorID = debtorID
+        }
+
+        if conversation.price == 0 {
+            conversation.debtorID = nil
+        }
+
+        return conversation.save(on: request)
+    }
+
+    private func updatePriceEditRequest(on request: Request, oldDebt: Debt, conversation: Conversation) throws -> Future<Conversation> {
+        conversation.price -= oldDebt.price
+
+        if conversation.price < 0 {
+            let opponentID = (conversation.creatorID == conversation.debtorID) ? conversation.opponentID : conversation.creatorID
+
+            conversation.debtorID = opponentID
+            conversation.price = fabs(conversation.price)
+        }
+
+        if conversation.price == 0 {
+            conversation.debtorID = nil
+        }
+
+        return conversation.save(on: request)
+    }
+
+    // MARK: -
     
     func create(request: Request, createForm: Conversation.CreateForm) throws -> Future<Conversation.Form> {
         let opponentID = createForm.opponentID
@@ -120,32 +170,16 @@ class DefaultConversationService: ConversationService {
         }
     }
 
-    func updatePrice(request: Request, debt: Debt, conversation: Conversation) -> Future<Conversation> {
-        let debtorID = debt.debtorID
-        let price = debt.price
+    func updatePrice(on request: Request, debt: Debt, conversation: Conversation) throws -> Future<Conversation> {
+        switch debt.status {
+        case .newRequest:
+            return self.updatePriceNewRequest(on: request, debt: debt, conversation: conversation)
 
-        if let conversationDebtorID = conversation.debtorID {
-            if debtorID == conversationDebtorID {
-                conversation.price += price
-            } else {
-                conversation.price -= price
+        case .editRequest:
+            return try self.updatePriceEditRequest(on: request, oldDebt: debt, conversation: conversation)
 
-                if conversation.price < 0 {
-                    let opponentID = (conversation.creatorID == conversation.debtorID) ? conversation.opponentID : conversation.creatorID
-
-                    conversation.debtorID = opponentID
-                    conversation.price = fabs(conversation.price)
-                }
-            }
-        } else {
-            conversation.price = price
-            conversation.debtorID = debtorID
+        case .deleteRequest, .closeRequest, .accepted:
+           throw Abort(.badRequest)
         }
-
-        if conversation.price == 0 {
-            conversation.debtorID = nil
-        }
-
-        return conversation.save(on: request)
     }
 }

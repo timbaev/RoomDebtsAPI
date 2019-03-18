@@ -19,6 +19,10 @@ extension Request {
             return ""
         }
     }
+
+    var userID: User.ID? {
+        return try? TokenHelpers.getUserID(fromPayloadOf: self.token)
+    }
     
     // MARK: - Instance Methods
     

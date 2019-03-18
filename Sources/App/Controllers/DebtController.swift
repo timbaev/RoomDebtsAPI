@@ -50,6 +50,12 @@ final class DebtController {
             }
         }
     }
+
+    func update(_ request: Request, createForm: Debt.CreateForm) throws -> Future<Debt.Form> {
+        return try request.parameters.next(Debt.self).flatMap { debt in
+            return try self.debtService.update(on: request, debt: debt, form: createForm)
+        }
+    }
 }
 
 // MARK: - RouteCollection
@@ -66,5 +72,7 @@ extension DebtController: RouteCollection {
 
         group.post(Debt.parameter, "accept", use: self.accept)
         group.post(Debt.parameter, "reject", use: self.reject)
+
+        group.put(Debt.CreateForm.self, at: Debt.parameter, use: self.update)
     }
 }

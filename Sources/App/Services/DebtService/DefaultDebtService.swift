@@ -22,6 +22,19 @@ class DefaultDebtService: DebtService {
 
     // MARK: - Instance Methods
 
+    private func updateAndSave(on request: Request, debt: Debt, form: Debt.CreateForm, creatorID: User.ID) -> Future<Debt> {
+        debt.price = form.price
+        debt.date = form.date
+        debt.description = form.description
+        debt.debtorID = form.debtorID
+        debt.status = .editRequest
+        debt.creatorID = creatorID
+
+        return debt.save(on: request)
+    }
+
+    // MARK: -
+
     func create(request: Request, form: Debt.CreateForm) throws -> Future<Debt.Form> {
         return try request.authorizedUser().flatMap { user in
             let userID = try user.requireID()
@@ -92,14 +105,10 @@ class DefaultDebtService: DebtService {
                     throw Abort(.badRequest, reason: "User is not participant of conversation")
                 }
 
-                return self.conversationService.updatePrice(request: request, debt: debt, conversation: conversation).flatMap { _ in
+                return try self.conversationService.updatePrice(on: request, debt: debt, conversation: conversation).flatMap { _ in
                     debt.status = .accepted
 
-                    return debt.save(on: request).flatMap { savedDebt in
-                        return debt.creator.get(on: request).map { creator in
-                            return Debt.Form(debt: savedDebt, creator: User.PublicForm(user: creator))
-                        }
-                    }
+                    return debt.save(on: request).toForm(on: request)
                 }
             }
         }
@@ -107,5 +116,35 @@ class DefaultDebtService: DebtService {
 
     func reject(on request: Request, debt: Debt) throws -> Future<Void> {
         return debt.delete(on: request)
+    }
+
+    func update(on request: Request, debt: Debt, form: Debt.CreateForm) throws -> Future<Debt.Form> {
+        return debt.conversation.get(on: request).flatMap { conversation in
+            guard let userID = request.userID else {
+                throw Abort(.unauthorized)
+            }
+
+            guard conversation.creatorID == form.debtorID || conversation.opponentID == form.debtorID else {
+                throw Abort(.badRequest, reason: "Debtor is not participant")
+            }
+
+            guard conversation.creatorID == request.userID || conversation.opponentID == request.userID else {
+                throw Abort(.badRequest, reason: "Creator is not participant")
+            }
+
+            guard conversation.status == .accepted else {
+                throw Abort(.badRequest, reason: "Conversation is not accepted")
+            }
+
+            if debt.status == .accepted {
+                debt.status = .editRequest
+                
+                return try self.conversationService.updatePrice(on: request, debt: debt, conversation: conversation).flatMap { _ in
+                    return self.updateAndSave(on: request, debt: debt, form: form, creatorID: userID).toForm(on: request)
+                }
+            } else {
+                return self.updateAndSave(on: request, debt: debt, form: form, creatorID: userID).toForm(on: request)
+            }
+        }
     }
 }
