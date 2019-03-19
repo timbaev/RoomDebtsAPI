@@ -175,10 +175,10 @@ class DefaultConversationService: ConversationService {
         case .newRequest:
             return self.updatePriceNewRequest(on: request, debt: debt, conversation: conversation)
 
-        case .editRequest:
+        case .editRequest, .deleteRequest:
             return try self.updatePriceEditRequest(on: request, oldDebt: debt, conversation: conversation)
 
-        case .deleteRequest, .closeRequest, .accepted:
+        case .closeRequest, .accepted:
            throw Abort(.badRequest)
         }
     }

@@ -126,10 +126,12 @@ class DefaultDebtService: DebtService {
                     }
                 }
             } else if debt.status == .deleteRequest {
-                return debt.delete(on: request).map {
-                    response.http.status = .noContent
+                return try self.conversationService.updatePrice(on: request, for: .deleteRequest, debt: debt, conversation: conversation).flatMap { _ in
+                    return debt.delete(on: request).map {
+                        response.http.status = .noContent
 
-                    return response
+                        return response
+                    }
                 }
             } else {
                 throw Abort(.badRequest)
@@ -139,12 +141,12 @@ class DefaultDebtService: DebtService {
 
     func reject(on request: Request, debt: Debt) throws -> Future<Void> {
         switch debt.status {
-        case .newRequest, .editRequest:
+        case .newRequest, .editRequest, .deleteRequest:
             debt.isRejected = true
 
             return debt.save(on: request).transform(to: Void())
 
-        case .closeRequest, .deleteRequest, .accepted:
+        case .closeRequest, .accepted:
             throw Abort(.badRequest)
         }
     }
