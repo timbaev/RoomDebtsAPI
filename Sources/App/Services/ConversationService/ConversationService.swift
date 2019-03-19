@@ -18,4 +18,6 @@ protocol ConversationService {
     func reject(request: Request, conversation: Conversation) throws -> Future<Void>
 
     func updatePrice(on request: Request, action: PriceAction, debt: Debt, conversation: Conversation) throws -> Future<Conversation>
+
+    func repayAllRequest(on request: Request, conversation: Conversation) throws -> Future<Conversation.Form>
 }

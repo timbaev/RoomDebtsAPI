@@ -17,6 +17,7 @@ final class Conversation: Object {
         // MARK: - Enumeration Cases
         
         case accepted
+        case repayRequest
         case invited
         
         // MARK: - Type Methods
@@ -38,6 +39,17 @@ final class Conversation: Object {
         let status: String
         let price: Double
         let debtorID: Int?
+
+        // MARK: - Initializers
+
+        init(conversation: Conversation, creator: User, opponent: User) {
+            self.id = conversation.id
+            self.creator = User.PublicForm(user: creator)
+            self.opponent = User.PublicForm(user: opponent)
+            self.status = conversation.status.rawValue
+            self.price = conversation.price
+            self.debtorID = conversation.debtorID
+        }
     }
     
     // MARK: -
@@ -102,5 +114,24 @@ extension Conversation {
         return Database.create(Conversation.self, on: connection) { builder in
             builder.field(for: \.status, type: .text)
         }
+    }
+}
+
+// MARK: - Future
+
+extension Future where T: Conversation {
+
+    // MARK: - Instance Methods
+
+    func toForm(on request: Request) -> Future<Conversation.Form> {
+        return self.flatMap(to: Conversation.Form.self, { conversation in
+            return conversation
+                .creator
+                .get(on: request)
+                .and(conversation.opponent.get(on: request))
+                .map { (creator, opponent) in
+                    return Conversation.Form(conversation: conversation, creator: creator, opponent: opponent)
+            }
+        })
     }
 }

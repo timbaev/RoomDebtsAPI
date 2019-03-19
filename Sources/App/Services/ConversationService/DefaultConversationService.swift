@@ -83,23 +83,7 @@ class DefaultConversationService: ConversationService {
                     
                     return Conversation(creatorID: userID, opponentID: opponentID)
                         .save(on: request)
-                        .flatMap { savedConversation in
-                            return savedConversation
-                                .creator
-                                .get(on: request)
-                                .and(savedConversation.opponent.get(on: request))
-                                .flatMap { (creator, opponent) in
-                                    let creatorPublicForm = User.PublicForm(user: creator)
-                                    let opponentPublicForm = User.PublicForm(user: opponent)
-
-                                    return request.future(Conversation.Form(id: savedConversation.id,
-                                                                            creator: creatorPublicForm,
-                                                                            opponent: opponentPublicForm,
-                                                                            status: savedConversation.status.rawValue,
-                                                                            price: savedConversation.price,
-                                                                            debtorID: savedConversation.debtorID))
-                        }
-                    }
+                        .toForm(on: request)
                 }
             }
         }
@@ -138,23 +122,7 @@ class DefaultConversationService: ConversationService {
 
             conversation.status = .accepted
 
-            return conversation.save(on: request).flatMap { savedConversation in
-                return savedConversation
-                    .creator
-                    .get(on: request)
-                    .and(savedConversation.opponent.get(on: request))
-                    .flatMap { (creator, opponent) in
-                        let creatorPublicForm = User.PublicForm(user: creator)
-                        let opponentPublicForm = User.PublicForm(user: opponent)
-
-                        return request.future(Conversation.Form(id: savedConversation.id,
-                                                                creator: creatorPublicForm,
-                                                                opponent: opponentPublicForm,
-                                                                status: savedConversation.status.rawValue,
-                                                                price: savedConversation.price,
-                                                                debtorID: savedConversation.debtorID))
-                }
-            }
+            return conversation.save(on: request).toForm(on: request)
         }
     }
 
@@ -178,5 +146,16 @@ class DefaultConversationService: ConversationService {
         case .subtract:
             return try self.updatePriceEditRequest(on: request, oldDebt: debt, conversation: conversation)
         }
+    }
+
+    func repayAllRequest(on request: Request, conversation: Conversation) throws -> Future<Conversation.Form> {
+        guard try conversation.creatorID == request.requiredUserID() || conversation.opponentID == request.requiredUserID() else {
+            throw Abort(.badRequest, reason: "User is not participant of conversation")
+        }
+
+        conversation.status = .repayRequest
+        conversation.creatorID = try request.requiredUserID()
+
+        return conversation.save(on: request).toForm(on: request)
     }
 }
