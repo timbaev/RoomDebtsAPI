@@ -146,7 +146,7 @@ class DefaultDebtService: DebtService {
 
             return debt.save(on: request).transform(to: Void())
 
-        case .closeRequest, .accepted:
+        case .repayRequest, .accepted:
             throw Abort(.badRequest)
         }
     }
@@ -203,6 +203,21 @@ class DefaultDebtService: DebtService {
             }
 
             return debt.delete(on: request)
+        }
+    }
+
+    func repayRequest(on request: Request, debt: Debt) throws -> Future<Debt.Form> {
+        return debt.conversation.get(on: request).flatMap { conversation in
+            try self.validate(conversation: conversation, on: request)
+
+            guard debt.status == .accepted else {
+                throw Abort(.badRequest, reason: "Debt must be accepted")
+            }
+
+            debt.status = .repayRequest
+            debt.creatorID = try request.requiredUserID()
+
+            return debt.save(on: request).toForm(on: request)
         }
     }
 }

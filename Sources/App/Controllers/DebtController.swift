@@ -62,6 +62,12 @@ final class DebtController {
             return try self.debtService.delete(on: request, debt: debt).transform(to: .noContent)
         }
     }
+
+    func repayRequest(_ request: Request) throws -> Future<Debt.Form> {
+        return try request.parameters.next(Debt.self).flatMap { debt in
+            return try self.debtService.repayRequest(on: request, debt: debt)
+        }
+    }
 }
 
 // MARK: - RouteCollection
@@ -81,7 +87,9 @@ extension DebtController: RouteCollection {
 
         group.put(Debt.CreateForm.self, at: Debt.parameter, use: self.update)
 
-        group.delete(Debt.parameter, "request", use: self.deleteRequest)
         group.delete(Debt.parameter, use: self.delete)
+
+        group.post(Debt.parameter, "request", "delete", use: self.deleteRequest)
+        group.post(Debt.parameter, "request", "repay", use: self.repayRequest)
     }
 }

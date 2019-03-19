@@ -19,7 +19,7 @@ final class Debt: Object {
         case accepted
         case newRequest
         case editRequest
-        case closeRequest
+        case repayRequest
         case deleteRequest
 
         // MARK: - Type Methods
