@@ -79,12 +79,17 @@ final class Debt: Object {
     var price: Double
     var date: Date
     var description: String?
-    var status: Status
     var creatorID: User.ID
     var debtorID: User.ID
     var conversationID: Conversation.ID
     var createdAt: Date?
     var isRejected = false
+
+    var status: Status {
+        didSet {
+            self.isRejected = false
+        }
+    }
 
     // MARK: - Initializers
 

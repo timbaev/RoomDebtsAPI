@@ -33,21 +33,15 @@ final class DebtController {
         return try self.debtService.fetch(request: request, conversationID: conversationID)
     }
 
-    func accept(_ request: Request) throws -> Future<Debt.Form> {
+    func accept(_ request: Request) throws -> Future<Response> {
         return try request.parameters.next(Debt.self).flatMap { debt in
             return try self.debtService.accept(on: request, debt: debt)
         }
     }
 
-    func reject(_ request: Request) throws -> Future<Response> {
-        let response = Response(using: request)
-
+    func reject(_ request: Request) throws -> Future<HTTPStatus> {
         return try request.parameters.next(Debt.self).flatMap { debt in
-            return try self.debtService.reject(on: request, debt: debt).map {
-                response.http.status = .noContent
-
-                return response
-            }
+            return try self.debtService.reject(on: request, debt: debt).transform(to: .noContent)
         }
     }
 
@@ -63,15 +57,9 @@ final class DebtController {
         }
     }
 
-    func delete(_ request: Request) throws -> Future<Response> {
-        let response = Response(using: request)
-
+    func delete(_ request: Request) throws -> Future<HTTPStatus> {
         return try request.parameters.next(Debt.self).flatMap { debt in
-            return try self.debtService.delete(on: request, debt: debt).map {
-                response.http.status = .noContent
-
-                return response
-            }
+            return try self.debtService.delete(on: request, debt: debt).transform(to: .noContent)
         }
     }
 }

@@ -105,24 +105,34 @@ class DefaultDebtService: DebtService {
 
     // MARK: -
 
-    func accept(on request: Request, debt: Debt) throws -> Future<Debt.Form> {
-        return try request.authorizedUser().flatMap { user in
-            let userID = try user.requireID()
+    func accept(on request: Request, debt: Debt) throws -> Future<Response> {
+        let response = Response(using: request)
 
-            guard debt.status != .accepted else {
-                throw Abort(.badRequest, reason: "Debt already accepted")
-            }
+        guard debt.status != .accepted else {
+            throw Abort(.badRequest, reason: "Debt already accepted")
+        }
 
-            return debt.conversation.get(on: request).flatMap { conversation in
-                guard conversation.creatorID == userID || conversation.opponentID == userID else {
-                    throw Abort(.badRequest, reason: "User is not participant of conversation")
-                }
+        return debt.conversation.get(on: request).flatMap { conversation in
+            try self.validate(conversation: conversation, on: request)
 
+            if debt.status == .newRequest || debt.status == .editRequest {
                 return try self.conversationService.updatePrice(on: request, for: .newRequest, debt: debt, conversation: conversation).flatMap { _ in
                     debt.status = .accepted
 
-                    return debt.save(on: request).toForm(on: request)
+                    return debt.save(on: request).toForm(on: request).map { debtForm in
+                        try response.content.encode(debtForm)
+
+                        return response
+                    }
                 }
+            } else if debt.status == .deleteRequest {
+                return debt.delete(on: request).map {
+                    response.http.status = .noContent
+
+                    return response
+                }
+            } else {
+                throw Abort(.badRequest)
             }
         }
     }
