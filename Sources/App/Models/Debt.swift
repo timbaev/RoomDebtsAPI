@@ -17,6 +17,7 @@ final class Debt: Object {
         // MARK: - Enumeration Cases
 
         case accepted
+        case repaid
         case newRequest
         case editRequest
         case repayRequest

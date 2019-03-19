@@ -116,7 +116,7 @@ class DefaultDebtService: DebtService {
             try self.validate(conversation: conversation, on: request)
 
             if debt.status == .newRequest || debt.status == .editRequest {
-                return try self.conversationService.updatePrice(on: request, for: .newRequest, debt: debt, conversation: conversation).flatMap { _ in
+                return try self.conversationService.updatePrice(on: request, action: .add, debt: debt, conversation: conversation).flatMap { _ in
                     debt.status = .accepted
 
                     return debt.save(on: request).toForm(on: request).map { debtForm in
@@ -126,9 +126,19 @@ class DefaultDebtService: DebtService {
                     }
                 }
             } else if debt.status == .deleteRequest {
-                return try self.conversationService.updatePrice(on: request, for: .deleteRequest, debt: debt, conversation: conversation).flatMap { _ in
+                return try self.conversationService.updatePrice(on: request, action: .subtract, debt: debt, conversation: conversation).flatMap { _ in
                     return debt.delete(on: request).map {
                         response.http.status = .noContent
+
+                        return response
+                    }
+                }
+            } else if debt.status == .repayRequest {
+                return try self.conversationService.updatePrice(on: request, action: .subtract, debt: debt, conversation: conversation).flatMap { _ in
+                    debt.status = .repaid
+
+                    return debt.save(on: request).toForm(on: request).map { debtForm in
+                        try response.content.encode(debtForm)
 
                         return response
                     }
@@ -146,7 +156,7 @@ class DefaultDebtService: DebtService {
 
             return debt.save(on: request).transform(to: Void())
 
-        case .repayRequest, .accepted:
+        case .repayRequest, .accepted, .repaid:
             throw Abort(.badRequest)
         }
     }
@@ -170,7 +180,7 @@ class DefaultDebtService: DebtService {
             }
 
             if debt.status == .accepted {
-                return try self.conversationService.updatePrice(on: request, for: .editRequest, debt: debt, conversation: conversation).flatMap { _ in
+                return try self.conversationService.updatePrice(on: request, action: .subtract, debt: debt, conversation: conversation).flatMap { _ in
                     return self.updateAndSave(on: request, debt: debt, form: form, creatorID: userID).toForm(on: request)
                 }
             } else {

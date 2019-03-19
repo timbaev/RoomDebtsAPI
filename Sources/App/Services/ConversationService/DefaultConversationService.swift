@@ -170,16 +170,13 @@ class DefaultConversationService: ConversationService {
         }
     }
 
-    func updatePrice(on request: Request, for type: Debt.Status, debt: Debt, conversation: Conversation) throws -> Future<Conversation> {
-        switch type {
-        case .newRequest:
+    func updatePrice(on request: Request, action: PriceAction, debt: Debt, conversation: Conversation) throws -> Future<Conversation> {
+        switch action {
+        case .add:
             return self.updatePriceNewRequest(on: request, debt: debt, conversation: conversation)
 
-        case .editRequest, .deleteRequest:
+        case .subtract:
             return try self.updatePriceEditRequest(on: request, oldDebt: debt, conversation: conversation)
-
-        case .repayRequest, .accepted:
-           throw Abort(.badRequest)
         }
     }
 }
