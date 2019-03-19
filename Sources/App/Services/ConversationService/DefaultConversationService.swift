@@ -122,7 +122,24 @@ class DefaultConversationService: ConversationService {
 
             conversation.status = .accepted
 
-            return conversation.save(on: request).toForm(on: request)
+            if conversation.status == .invited {
+                return conversation.save(on: request).toForm(on: request)
+            } else {
+                return try conversation.debts.query(on: request).all().flatMap { debts in
+                    return (debts as [Debt]).map { debt -> Future<Debt> in
+                        let debt = debt
+
+                        debt.status = .repaid
+
+                        return debt.save(on: request)
+                    }.flatten(on: request).flatMap { updatedDebts -> Future<Conversation.Form> in
+                        conversation.price = 0
+                        conversation.debtorID = nil
+
+                        return conversation.save(on: request).toForm(on: request)
+                    }
+                }
+            }
         }
     }
 
