@@ -29,7 +29,7 @@ final class ConversationController {
         return try self.conversationService.fetch(request: request)
     }
 
-    func accept(_ request: Request) throws -> Future<Conversation.Form> {
+    func accept(_ request: Request) throws -> Future<Response> {
         return try request.parameters.next(Conversation.self).flatMap { conversation in
             return try self.conversationService.accept(request: request, conversation: conversation)
         }

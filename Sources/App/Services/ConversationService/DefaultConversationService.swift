@@ -112,19 +112,26 @@ class DefaultConversationService: ConversationService {
         }
     }
 
-    func accept(request: Request, conversation: Conversation) throws -> Future<Conversation.Form> {
+    func accept(request: Request, conversation: Conversation) throws -> Future<Response> {
         return try request.authorizedUser().flatMap { user in
             let userID = try user.requireID()
+            let response = Response(using: request)
 
             guard conversation.opponentID == userID else {
                 throw Abort(.badRequest, reason: "User is not opponent of converation")
             }
 
-            conversation.status = .accepted
-
             if conversation.status == .invited {
-                return conversation.save(on: request).toForm(on: request)
+                conversation.status = .accepted
+
+                return conversation.save(on: request).toForm(on: request).map { conversationForm in
+                    try response.content.encode(conversationForm)
+
+                    return response
+                }
             } else if conversation.status == .repayRequest {
+                conversation.status = .accepted
+
                 return try conversation.debts.query(on: request).all().flatMap { debts in
                     return (debts as [Debt]).map { debt -> Future<Debt> in
                         let debt = debt
@@ -132,11 +139,23 @@ class DefaultConversationService: ConversationService {
                         debt.status = .repaid
 
                         return debt.save(on: request)
-                    }.flatten(on: request).flatMap { updatedDebts -> Future<Conversation.Form> in
+                    }.flatten(on: request).flatMap { updatedDebts -> Future<Response> in
                         conversation.price = 0
                         conversation.debtorID = nil
 
-                        return conversation.save(on: request).toForm(on: request)
+                        return conversation.save(on: request).toForm(on: request).map { conversationForm in
+                            try response.content.encode(conversationForm)
+
+                            return response
+                        }
+                    }
+                }
+            } else if conversation.status == .deleteRequest {
+                return try conversation.debts.query(on: request).delete().flatMap {
+                    return conversation.delete(on: request).map {
+                        response.http.status = .noContent
+
+                        return response
                     }
                 }
             } else {

@@ -14,7 +14,7 @@ protocol ConversationService {
     func create(request: Request, createForm: Conversation.CreateForm) throws -> Future<Conversation.Form>
     func fetch(request: Request) throws -> Future<[Conversation.Form]>
 
-    func accept(request: Request, conversation: Conversation) throws -> Future<Conversation.Form>
+    func accept(request: Request, conversation: Conversation) throws -> Future<Response>
     func reject(request: Request, conversation: Conversation) throws -> Future<Response>
 
     func updatePrice(on request: Request, action: PriceAction, debt: Debt, conversation: Conversation) throws -> Future<Conversation>
