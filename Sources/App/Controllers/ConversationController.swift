@@ -58,6 +58,14 @@ final class ConversationController {
             return try self.conversationService.cancelRequest(on: request, conversation: conversation)
         }
     }
+
+    func delete(_ request: Request) throws -> Future<HTTPStatus> {
+        return try request.parameters.next(Conversation.self).flatMap { conversation in
+            return try self.conversationService
+                .delete(on: request, conversation: conversation)
+                .transform(to: .noContent)
+        }
+    }
 }
 
 // MARK: - RouteCollection
@@ -78,5 +86,7 @@ extension ConversationController: RouteCollection {
         group.post(Conversation.parameter, "request", "repay", use: self.repayAllRequest)
         group.post(Conversation.parameter, "request", "delete", use: self.deleteRequest)
         group.post(Conversation.parameter, "request", "cancel", use: self.cancelRequest)
+
+        group.delete(Conversation.parameter, use: self.delete)
     }
 }

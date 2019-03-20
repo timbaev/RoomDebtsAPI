@@ -13,6 +13,7 @@ protocol ConversationService {
     
     func create(request: Request, createForm: Conversation.CreateForm) throws -> Future<Conversation.Form>
     func fetch(request: Request) throws -> Future<[Conversation.Form]>
+    func delete(on request: Request, conversation: Conversation) throws -> Future<Void>
 
     func accept(request: Request, conversation: Conversation) throws -> Future<Response>
     func reject(request: Request, conversation: Conversation) throws -> Future<Response>
@@ -22,4 +23,5 @@ protocol ConversationService {
     func repayAllRequest(on request: Request, conversation: Conversation) throws -> Future<Conversation.Form>
     func deleteRequest(on request: Request, conversation: Conversation) throws -> Future<Conversation.Form>
     func cancelRequest(on request: Request, conversation: Conversation) throws -> Future<Conversation.Form>
+
 }

@@ -257,4 +257,16 @@ class DefaultConversationService: ConversationService {
 
         return conversation.save(on: request).toForm(on: request)
     }
+
+    func delete(on request: Request, conversation: Conversation) throws -> Future<Void> {
+        guard try conversation.creatorID == request.requiredUserID() else {
+            throw Abort(.badRequest, reason: "User is not participant of conversation")
+        }
+
+        guard conversation.status == .invited else {
+            throw Abort(.badRequest, reason: "Conversation status is not 'invited'")
+        }
+
+        return conversation.delete(on: request)
+    }
 }
