@@ -18,6 +18,7 @@ final class Conversation: Object {
         
         case accepted
         case repayRequest
+        case deleteRequest
         case invited
         
         // MARK: - Type Methods
@@ -68,10 +69,15 @@ final class Conversation: Object {
     var id: Int?
     var creatorID: User.ID
     var opponentID: User.ID
-    var status: Status
     var rejectStatus: Status?
     var price: Double
     var debtorID: User.ID?
+
+    var status: Status {
+        didSet {
+            self.rejectStatus = nil
+        }
+    }
     
     // MARK: - Initializers
     

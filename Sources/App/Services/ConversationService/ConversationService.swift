@@ -20,4 +20,5 @@ protocol ConversationService {
     func updatePrice(on request: Request, action: PriceAction, debt: Debt, conversation: Conversation) throws -> Future<Conversation>
 
     func repayAllRequest(on request: Request, conversation: Conversation) throws -> Future<Conversation.Form>
+    func deleteRequest(on request: Request, conversation: Conversation) throws -> Future<Conversation.Form>
 }

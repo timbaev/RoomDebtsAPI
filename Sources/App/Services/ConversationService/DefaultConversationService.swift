@@ -190,7 +190,26 @@ class DefaultConversationService: ConversationService {
             throw Abort(.badRequest, reason: "User is not participant of conversation")
         }
 
+        guard conversation.status == .accepted else {
+            throw Abort(.badRequest, reason: "Conversation should be approved")
+        }
+
         conversation.status = .repayRequest
+        conversation.creatorID = try request.requiredUserID()
+
+        return conversation.save(on: request).toForm(on: request)
+    }
+
+    func deleteRequest(on request: Request, conversation: Conversation) throws -> Future<Conversation.Form> {
+        guard try conversation.creatorID == request.requiredUserID() || conversation.opponentID == request.requiredUserID() else {
+            throw Abort(.badRequest, reason: "User is not participant of conversation")
+        }
+
+        guard conversation.status == .accepted || conversation.status == .repayRequest else {
+            throw Abort(.badRequest, reason: "Conversation should be approved")
+        }
+
+        conversation.status = .deleteRequest
         conversation.creatorID = try request.requiredUserID()
 
         return conversation.save(on: request).toForm(on: request)
