@@ -52,6 +52,12 @@ final class ConversationController {
             return try self.conversationService.deleteRequest(on: request, conversation: conversation)
         }
     }
+
+    func cancelRequest(_ request: Request) throws -> Future<Conversation.Form> {
+        return try request.parameters.next(Conversation.self).flatMap { conversation in
+            return try self.conversationService.cancelRequest(on: request, conversation: conversation)
+        }
+    }
 }
 
 // MARK: - RouteCollection
@@ -71,5 +77,6 @@ extension ConversationController: RouteCollection {
 
         group.post(Conversation.parameter, "request", "repay", use: self.repayAllRequest)
         group.post(Conversation.parameter, "request", "delete", use: self.deleteRequest)
+        group.post(Conversation.parameter, "request", "cancel", use: self.cancelRequest)
     }
 }

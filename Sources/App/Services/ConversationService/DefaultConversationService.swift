@@ -242,4 +242,19 @@ class DefaultConversationService: ConversationService {
 
         return conversation.save(on: request).toForm(on: request)
     }
+
+    func cancelRequest(on request: Request, conversation: Conversation) throws -> Future<Conversation.Form> {
+        guard try conversation.creatorID == request.requiredUserID() || conversation.opponentID == request.requiredUserID() else {
+            throw Abort(.badRequest, reason: "User is not participant of conversation")
+        }
+
+        guard conversation.status == .repayRequest || conversation.status == .deleteRequest else {
+            throw Abort(.badRequest)
+        }
+
+        conversation.status = .accepted
+        conversation.creatorID = try request.requiredUserID()
+
+        return conversation.save(on: request).toForm(on: request)
+    }
 }
