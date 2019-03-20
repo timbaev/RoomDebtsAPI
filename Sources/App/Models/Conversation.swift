@@ -39,6 +39,7 @@ final class Conversation: Object {
         let status: String
         let price: Double
         let debtorID: Int?
+        let rejectStatus: String?
 
         // MARK: - Initializers
 
@@ -49,6 +50,7 @@ final class Conversation: Object {
             self.status = conversation.status.rawValue
             self.price = conversation.price
             self.debtorID = conversation.debtorID
+            self.rejectStatus = conversation.rejectStatus?.rawValue
         }
     }
     
@@ -67,6 +69,7 @@ final class Conversation: Object {
     var creatorID: User.ID
     var opponentID: User.ID
     var status: Status
+    var rejectStatus: Status?
     var price: Double
     var debtorID: User.ID?
     

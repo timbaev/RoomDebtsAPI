@@ -124,7 +124,7 @@ class DefaultConversationService: ConversationService {
 
             if conversation.status == .invited {
                 return conversation.save(on: request).toForm(on: request)
-            } else {
+            } else if conversation.status == .repayRequest {
                 return try conversation.debts.query(on: request).all().flatMap { debts in
                     return (debts as [Debt]).map { debt -> Future<Debt> in
                         let debt = debt
@@ -139,19 +139,39 @@ class DefaultConversationService: ConversationService {
                         return conversation.save(on: request).toForm(on: request)
                     }
                 }
+            } else {
+                throw Abort(.badRequest)
             }
         }
     }
 
-    func reject(request: Request, conversation: Conversation) throws -> Future<Void> {
+    func reject(request: Request, conversation: Conversation) throws -> Future<Response> {
         return try request.authorizedUser().flatMap { user in
             let userID = try user.requireID()
+            let response = Response(using: request)
 
             guard conversation.opponentID == userID else {
                 throw Abort(.badRequest, reason: "User is not opponent of converation")
             }
 
-            return conversation.delete(on: request)
+            if conversation.status == .invited {
+                return conversation.delete(on: request).map {
+                    response.http.status = .noContent
+
+                    return response
+                }
+            } else if conversation.status == .repayRequest {
+                conversation.status = .accepted
+                conversation.rejectStatus = .repayRequest
+
+                return conversation.save(on: request).toForm(on: request).map { conversationForm -> Response in
+                    try response.content.encode(conversationForm)
+
+                    return response
+                }
+            } else {
+                throw Abort(.badRequest)
+            }
         }
     }
 

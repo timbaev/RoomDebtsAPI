@@ -36,14 +36,8 @@ final class ConversationController {
     }
 
     func reject(_ request: Request) throws -> Future<Response> {
-        let response = Response(using: request)
-
         return try request.parameters.next(Conversation.self).flatMap { conversation in
-            return try self.conversationService.reject(request: request, conversation: conversation).flatMap {
-                response.http.status = .noContent
-
-                return request.future(response)
-            }
+            return try self.conversationService.reject(request: request, conversation: conversation)
         }
     }
 
