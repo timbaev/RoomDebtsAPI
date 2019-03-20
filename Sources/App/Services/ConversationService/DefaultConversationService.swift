@@ -188,6 +188,15 @@ class DefaultConversationService: ConversationService {
 
                     return response
                 }
+            } else if conversation.status == .deleteRequest {
+                conversation.status = .accepted
+                conversation.rejectStatus = .deleteRequest
+
+                return conversation.save(on: request).toForm(on: request).map { conversationForm -> Response in
+                    try response.content.encode(conversationForm)
+
+                    return response
+                }
             } else {
                 throw Abort(.badRequest)
             }
