@@ -24,12 +24,17 @@ final class User: PostgreSQLModel {
         
         // MARK: - Initializers
         
-        init(user: User, image: FileRecord.Form? = nil) {
+        init(user: User) {
             self.id = user.id
             self.firstName = user.firstName
             self.lastName = user.lastName
             self.phoneNumber = user.phoneNumber
-            self.imageURL = image?.publicURL
+
+            if let imageID = user.imageID {
+                self.imageURL = FileRecord.publicURL(withID: imageID)
+            } else {
+                self.imageURL = nil
+            }
         }
     }
     
@@ -178,17 +183,11 @@ extension Future where T: User {
     
     // MARK: - Instance Methods
     
-    func toForm(on request: Request) -> Future<User.Form> {
+    func toForm() -> Future<User.Form> {
         return self.flatMap(to: User.Form.self, { user in
-            if let image = user.image {
-                return image.get(on: request).map(to: User.Form.self, { fileRecord in
-                    return User.Form(user: user, image: fileRecord.toForm())
-                })
-            } else {
-                return self.map(to: User.Form.self, { user in
-                    return User.Form(user: user)
-                })
-            }
+            return self.map(to: User.Form.self, { user in
+                return User.Form(user: user)
+            })
         })
     }
 }

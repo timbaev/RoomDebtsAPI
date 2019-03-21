@@ -59,7 +59,7 @@ class DefaultFileService: FileService {
         
         return FileRecord(filename: file.filename, fileKind: file.ext, localPath: localPath).save(on: request).flatMap { fileRecord in
             user.imageID = try fileRecord.requireID()
-            return user.save(on: request).toForm(on: request)
+            return user.save(on: request).toForm()
         }
     }
 }

@@ -42,6 +42,10 @@ final class AccountController {
             return try self.accountService.uploadAvatarImage(request: request, file: file)
         }
     }
+
+    func update(_ request: Request, userForm: User.Form) throws -> Future<Response> {
+        return try self.accountService.updateAccount(on: request, form: userForm)
+    }
 }
 
 // MARK: - RouteCollection
@@ -60,5 +64,6 @@ extension AccountController: RouteCollection {
         group.post(PhoneNumberDto.self, at: "/login", use: self.signIn)
         
         authGroup.post("/avatar", use: self.uploadImage)
+        authGroup.put(User.Form.self, use: self.update)
     }
 }

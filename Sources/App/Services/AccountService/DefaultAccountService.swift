@@ -106,7 +106,9 @@ class DefaultAccountService: AccountService {
                     
                         return verificationCode.delete(on: request).then {
                             return user.update(on: request).flatMap { savedUser in
-                                return try self.createTokens(for: savedUser, on: request)
+                                return RefreshToken.query(on: request).filter(\.userID == userID).delete().flatMap {
+                                    return try self.createTokens(for: savedUser, on: request)
+                        }
                     }
                 }
             }
@@ -179,6 +181,63 @@ class DefaultAccountService: AccountService {
                 }
             } else {
                 return try self.fileService.uploadImage(request: request, file: file, user: user)
+            }
+        }
+    }
+
+    func updateAccount(on request: Request, form: User.Form) throws -> Future<Response> {
+        return try request.authorizedUser().flatMap { user in
+            let userID = try user.requireID()
+            let response = Response(using: request)
+
+            user.firstName = form.firstName
+            user.lastName = form.lastName
+
+            if user.phoneNumber != form.phoneNumber {
+                return User.query(on: request)
+                    .filter(\.phoneNumber == form.phoneNumber)
+                    .first()
+                    .flatMap { existingUser in
+                        guard existingUser == nil else {
+                            throw Abort(.badRequest, reason: "User with phone number already exists")
+                        }
+
+                        user.phoneNumber = form.phoneNumber
+                        user.isConfirmed = false
+
+                        return VerificationCode.query(on: request)
+                            .filter(\.userID == userID)
+                            .first()
+                            .flatMap { verificationCode in
+                                if let verificationCode = verificationCode {
+                                    verificationCode.update()
+
+                                    return verificationCode.save(on: request).flatMap { _ in
+                                        user.save(on: request).toForm().map { userForm in
+                                            response.http.status = .accepted
+                                            try response.content.encode(userForm)
+
+                                            return response
+                                        }
+                                    }
+                                } else {
+                                    return VerificationCode(userID: userID).save(on: request).flatMap { _ in
+                                        return user.save(on: request).toForm().map { userForm in
+                                            response.http.status = .accepted
+                                            try response.content.encode(userForm)
+
+                                            return response
+                                        }
+                                    }
+                                }
+                        }
+                }
+            } else {
+                return user.save(on: request).toForm().map { userForm in
+                    try response.content.encode(userForm)
+
+                    return response
+                }
             }
         }
     }

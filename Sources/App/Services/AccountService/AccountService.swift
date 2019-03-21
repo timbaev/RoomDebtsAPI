@@ -16,4 +16,5 @@ protocol AccountService {
     func refreshToken(_ request: Request, accessDto: AccessDto) throws -> Future<AccessDto>
     func signIn(phoneNumberDto: PhoneNumberDto, request: Request) throws -> Future<ResponseDto>
     func uploadAvatarImage(request: Request, file: File) throws -> Future<User.Form>
+    func updateAccount(on request: Request, form: User.Form) throws -> Future<Response>
 }
