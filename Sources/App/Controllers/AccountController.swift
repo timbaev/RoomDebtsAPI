@@ -46,6 +46,10 @@ final class AccountController {
     func update(_ request: Request, userForm: User.Form) throws -> Future<Response> {
         return try self.accountService.updateAccount(on: request, form: userForm)
     }
+
+    func logout(_ request: Request) throws -> Future<HTTPStatus> {
+        return try self.accountService.logout(on: request).transform(to: .noContent)
+    }
 }
 
 // MARK: - RouteCollection
@@ -59,11 +63,13 @@ extension AccountController: RouteCollection {
         let authGroup = group.grouped(JWTMiddleware())
         
         group.post(User.Form.self, use: self.create)
-        group.post(AccessDto.self, at: "/token", use: self.refreshToken)
-        group.post(ConfirmPhoneDto.self, at: "/confirm", use: self.confirm)
-        group.post(PhoneNumberDto.self, at: "/login", use: self.signIn)
+        group.post(AccessDto.self, at: "token", use: self.refreshToken)
+        group.post(ConfirmPhoneDto.self, at: "confirm", use: self.confirm)
+        group.post(PhoneNumberDto.self, at: "login", use: self.signIn)
         
-        authGroup.post("/avatar", use: self.uploadImage)
+        authGroup.post("avatar", use: self.uploadImage)
+        authGroup.post("logout", use: self.logout)
+
         authGroup.put(User.Form.self, use: self.update)
     }
 }

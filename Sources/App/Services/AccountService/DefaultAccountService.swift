@@ -241,4 +241,10 @@ class DefaultAccountService: AccountService {
             }
         }
     }
+
+    func logout(on request: Request) throws -> Future<Void> {
+        return try request.authorizedUser().flatMap { user in
+            return try user.refreshTokens.query(on: request).delete()
+        }
+    }
 }
