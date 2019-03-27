@@ -92,14 +92,14 @@ class DefaultAccountService: AccountService {
                     .query(on: request)
                     .filter(\.userID == userID)
                     .first()
-                    .unwrap(or: Abort(.badRequest, reason: "Verification Code not found"))
+                    .unwrap(or: Abort(.badRequest, reason: "Verification code not found"))
                     .flatMap { verificationCode in
                         guard verificationCode.expiredAt > Date() else {
                             throw Abort(.badRequest, reason: "Verification code expired")
                         }
                     
                         guard verificationCode.code == confirmPhoneDto.code else {
-                            throw Abort(.badRequest, reason: "Invalid confirmation code")
+                            throw Abort(.badRequest, reason: "Invalid verification code")
                         }
                     
                         user.isConfirmed = true
@@ -123,7 +123,7 @@ class DefaultAccountService: AccountService {
             .unwrap(or: Abort(.unauthorized))
         
         return refreshTokenModel.flatMap { refreshTokenModel in
-            if refreshTokenModel.token == accessDto.refreshToken, refreshTokenModel.expiredAt > Date() {
+            if refreshTokenModel.expiredAt > Date() {
                 
                 return refreshTokenModel.user.get(on: request).flatMap { user in
                     let accessToken = try TokenHelpers.createAccessToken(from: user)

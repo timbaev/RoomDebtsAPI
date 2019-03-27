@@ -21,12 +21,14 @@ public func configure(_ config: inout Config, _ env: inout Environment, _ servic
     // MARK: - PostgreSQL
     
     try services.register(FluentPostgreSQLProvider())
+
+    let databaseName = (env == .testing) ? "room_debts_test" : "room_debts"
     
     let postgresqlConfig = PostgreSQLDatabaseConfig(
         hostname: "127.0.0.1",
         port: 5432,
         username: "postgres",
-        database: "room_debts",
+        database: databaseName,
         password: "qwe"
     )
     

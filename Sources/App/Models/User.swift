@@ -8,11 +8,11 @@
 import Vapor
 import FluentPostgreSQL
 
-final class User: PostgreSQLModel {
+final class User: Object {
     
     // MARK: - Nested Types
     
-    struct Form: Content {
+    struct Form: Content, Equatable {
         
         // MARK: - Instance Properties
         
@@ -156,26 +156,6 @@ extension User {
         return self.children(\.debtorID)
     }
 }
-
-// MARK: - Content
-extension User: Content { }
-
-// MARK: - Migration
-extension User: PostgreSQLMigration {
-    
-    // MARK: - Instance Methods
-    
-    static func prepare(on connection: PostgreSQLConnection) -> Future<Void> {
-        return Database.update(User.self, on: connection) { builder in
-            builder.deleteField(for: \.isConfirmed)
-            builder.field(for: \.isConfirmed, type: .bool, .default(.literal(.boolean(.false))))
-            builder.unique(on: \.phoneNumber)
-        }
-    }
-}
-
-// MARK: - Parameter
-extension User: Parameter { }
 
 // MARK: - Future
 
