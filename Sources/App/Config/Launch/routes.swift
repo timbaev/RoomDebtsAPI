@@ -36,4 +36,10 @@ public func routes(_ router: Router) throws {
     let debtController = DebtController(debtService: RDServices.debtService)
 
     try router.register(collection: debtController)
+
+    // MARK: - CheckController
+
+    let checkController = CheckController()
+
+    try router.register(collection: checkController)
 }

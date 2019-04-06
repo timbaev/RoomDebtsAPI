@@ -12,7 +12,7 @@ final class Conversation: Object {
     
     // MARK: - Nested Types
     
-    public enum Status: String, ReflectionDecodable, Codable {
+    public enum Status: String, PostgreSQLEnum {
         
         // MARK: - Enumeration Cases
         
@@ -20,12 +20,6 @@ final class Conversation: Object {
         case repayRequest
         case deleteRequest
         case invited
-        
-        // MARK: - Type Methods
-        
-        public static func reflectDecoded() throws -> (Conversation.Status, Conversation.Status) {
-            return (.accepted, .invited)
-        }
     }
     
     // MARK: -
@@ -110,19 +104,6 @@ extension Conversation {
 
     var debts: Children<Conversation, Debt> {
         return self.children(\.conversationID)
-    }
-}
-
-// MARK: - Migration
-
-extension Conversation {
-    
-    // MARK: - Type Methods
-    
-    static func prepare(on connection: PostgreSQLConnection) -> Future<Void> {
-        return Database.create(Conversation.self, on: connection) { builder in
-            builder.field(for: \.status, type: .text)
-        }
     }
 }
 

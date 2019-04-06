@@ -155,6 +155,14 @@ extension User {
     var asDebtorDebts: Children<User, Debt> {
         return self.children(\.debtorID)
     }
+
+    var checks: Siblings<User, Check, CheckUser> {
+        return self.siblings()
+    }
+
+    var asCreatorChecks: Children<User, Check> {
+        return self.children(\.creatorID)
+    }
 }
 
 // MARK: - Future

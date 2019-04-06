@@ -51,6 +51,13 @@ public func configure(_ config: inout Config, _ env: inout Environment, _ servic
     migrations.add(model: VerificationCode.self, database: .psql)
     migrations.add(model: Conversation.self, database: .psql)
     migrations.add(model: Debt.self, database: .psql)
+    migrations.add(migration: CheckUser.Status.self, database: .psql)
+    migrations.add(migration: Check.Status.self, database: .psql)
+    migrations.add(model: Check.self, database: .psql)
+    migrations.add(model: Product.self, database: .psql)
+    migrations.add(model: CheckProduct.self, database: .psql)
+    migrations.add(model: CheckUser.self, database: .psql)
+    migrations.add(model: ProductCheckUser.self, database: .psql)
     
     services.register(migrations)
     
