@@ -22,6 +22,52 @@ final class Check: Object {
         case rejected
     }
 
+    // MARK: -
+
+    struct QRCodeForm: Content {
+
+        // MARK: - Instance Properties
+
+        let date: String
+        let sum: Int
+        let fiscalSign: String
+        let fd: String
+        let n: Int
+        let fn: String
+    }
+
+    // MARK: -
+
+    struct Form: Content {
+
+        // MARK: - Instance Properties
+
+        let id: Int?
+        let date: Date
+        let store: String?
+        let totalSum: Double
+        let address: String
+        let status: String
+        let creator: User.PublicForm
+        let imageURL: URL?
+
+        init(check: Check, creator: User) {
+            self.id = check.id
+            self.date = check.date
+            self.store = check.store
+            self.totalSum = check.totalSum
+            self.address = check.address
+            self.status = check.status.rawValue
+            self.creator = User.PublicForm(user: creator)
+
+            if let imageID = check.imageID {
+                self.imageURL = FileRecord.publicURL(withID: imageID)
+            } else {
+                self.imageURL = nil
+            }
+        }
+    }
+
     // MARK: - Instance Properties
 
     var id: Int?
@@ -32,6 +78,18 @@ final class Check: Object {
     var status: Status
     var creatorID: User.ID
     var imageID: FileRecord.ID?
+
+    // MARK: - Initializers
+
+    init(receipt: Receipt, creatorID: User.ID, imageID: FileRecord.ID? = nil) {
+        self.date = receipt.dateTime
+        self.store = receipt.user
+        self.totalSum = Double(receipt.totalSum) / 100
+        self.address = receipt.retailPlaceAddress
+        self.status = .notCalculated
+        self.creatorID = creatorID
+        self.imageID = imageID
+    }
 }
 
 // MARK: -
@@ -70,5 +128,18 @@ extension Check {
             builder.reference(from: \.creatorID, to: \User.id)
             builder.reference(from: \.imageID, to: \FileRecord.id, onDelete: .cascade)
         }
+    }
+}
+
+extension Future where T: Check {
+
+    // MARK: - Instance Methods
+
+    func toForm(on request: Request) -> Future<Check.Form> {
+        return self.flatMap(to: Check.Form.self, { check in
+            return check.creator.get(on: request).map { creator in
+                return Check.Form(check: check, creator: creator)
+            }
+        })
     }
 }

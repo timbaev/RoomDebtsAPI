@@ -39,7 +39,7 @@ public func routes(_ router: Router) throws {
 
     // MARK: - CheckController
 
-    let checkController = CheckController()
+    let checkController = CheckController(checkService: RDServices.checkService)
 
     try router.register(collection: checkController)
 }

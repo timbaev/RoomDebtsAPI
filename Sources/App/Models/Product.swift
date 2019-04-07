@@ -17,7 +17,17 @@ final class Product: Object {
     var sum: Double
     var price: Double
     var name: String
-    var barcodeNumber: String
+    var barcodeNumber: String?
+
+    // MARK: - Initializers
+
+    init(quantity: Double, sum: Double, price: Double, name: String, barcodeNumber: String?) {
+        self.quantity = quantity
+        self.sum = sum
+        self.price = price
+        self.name = name
+        self.barcodeNumber = barcodeNumber
+    }
 }
 
 // MARK: -

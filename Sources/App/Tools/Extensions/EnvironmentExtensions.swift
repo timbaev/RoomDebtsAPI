@@ -22,4 +22,12 @@ extension Environment {
     static var STORAGE_PATH: [PathComponentsRepresentable] {
         return [Environment.get("STORAGE_PATH") ?? "Storage"]
     }
+
+    static var FTS_LOGIN: String? {
+        return Environment.get("FTS_LOGIN")
+    }
+
+    static var FTS_PASSWORD: String? {
+        return Environment.get("FTS_PASSWORD")
+    }
 }

@@ -16,4 +16,10 @@ enum RDServices {
     static let conversationService: ConversationService = DefaultConversationService()
     static let userService: UserService = DefaultUserService()
     static let debtService: DebtService = DefaultDebtService(conversationService: RDServices.conversationService)
+    static let checkService: CheckService = DefaultCheckService(receiptManager: RDServices.receiptManager, productService: RDServices.productService)
+    static let productService: ProductService = DefaultProductService()
+
+    // MARK: -
+
+    static let receiptManager: ReceiptManager = DefaultReceiptManager()
 }
