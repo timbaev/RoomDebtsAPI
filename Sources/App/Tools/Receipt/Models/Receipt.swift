@@ -16,4 +16,8 @@ struct Receipt: Codable {
     let dateTime: Date
     let totalSum: Int
     let items: [Item]
+
+    let fiscalDriveNumber: String
+    let fiscalDocumentNumber: Int
+    let fiscalSign: Int
 }

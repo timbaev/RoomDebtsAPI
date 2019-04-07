@@ -30,8 +30,8 @@ final class Check: Object {
 
         let date: String
         let sum: Int
-        let fiscalSign: String
-        let fd: String
+        let fiscalSign: Int
+        let fd: Int
         let n: Int
         let fn: String
     }
@@ -72,10 +72,15 @@ final class Check: Object {
 
     var id: Int?
     var date: Date
-    var store: String?
+    var store: String
     var totalSum: Double
     var address: String
     var status: Status
+
+    var fn: String
+    var fd: Int
+    var fiscalSign: Int
+
     var creatorID: User.ID
     var imageID: FileRecord.ID?
 
@@ -83,12 +88,15 @@ final class Check: Object {
 
     init(receipt: Receipt, creatorID: User.ID, imageID: FileRecord.ID? = nil) {
         self.date = receipt.dateTime
-        self.store = receipt.user
+        self.store = receipt.user ?? "Unknown Store"
         self.totalSum = Double(receipt.totalSum) / 100
         self.address = receipt.retailPlaceAddress
         self.status = .notCalculated
         self.creatorID = creatorID
         self.imageID = imageID
+        self.fn = receipt.fiscalDriveNumber
+        self.fd = receipt.fiscalDocumentNumber
+        self.fiscalSign = receipt.fiscalSign
     }
 }
 

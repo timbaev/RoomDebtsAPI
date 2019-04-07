@@ -6,6 +6,7 @@
 //
 
 import Vapor
+import FluentPostgreSQL
 
 struct DefaultCheckService: CheckService {
 
@@ -17,24 +18,35 @@ struct DefaultCheckService: CheckService {
     // MARK: - Instance Methods
 
     func create(on request: Request, form: Check.QRCodeForm) throws -> Future<Check.Form> {
-        return try self.receiptManager.checkReceiptExists(on: request, form: form).flatMap { checkExists in
-            guard checkExists else {
-                throw Abort(.notFound, reason: "Check not found on Federal Tax Service. Try again later")
-            }
+        return Check.query(on: request)
+            .filter(\.fd == form.fd)
+            .filter(\.fn == form.fn)
+            .filter(\.fiscalSign == form.fiscalSign)
+            .first()
+            .flatMap { existsCheck in
+                guard existsCheck == nil else {
+                    throw Abort(.badRequest, reason: "Check \"\(existsCheck!.store)\" already exists")
+                }
 
-            return try self.receiptManager.fetchReceiptContent(on: request, form: form).flatMap { receipt in
-                let check = Check(receipt: receipt, creatorID: try request.requiredUserID())
-
-                return check.save(on: request).flatMap { savedCheck in
-                    for item in receipt.items {
-                        _ = self.productService.findOrCreate(on: request, for: item).flatMap { product in
-                            savedCheck.products.attach(product, on: request)
-                        }
+                return try self.receiptManager.checkReceiptExists(on: request, form: form).flatMap { checkExists in
+                    guard checkExists else {
+                        throw Abort(.notFound, reason: "Check not found on Federal Tax Service. Try again later")
                     }
 
-                    return request.future(savedCheck).toForm(on: request)
+                    return try self.receiptManager.fetchReceiptContent(on: request, form: form).flatMap { receipt in
+                        let check = Check(receipt: receipt, creatorID: try request.requiredUserID())
+
+                        return check.save(on: request).flatMap { savedCheck in
+                            for item in receipt.items {
+                                _ = self.productService.findOrCreate(on: request, for: item).flatMap { product in
+                                    savedCheck.products.attach(product, on: request)
+                                }
+                            }
+
+                            return request.future(savedCheck).toForm(on: request)
+                        }
+                    }
                 }
-            }
         }
     }
 }
