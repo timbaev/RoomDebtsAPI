@@ -43,10 +43,24 @@ struct DefaultCheckService: CheckService {
                                 }
                             }
 
-                            return request.future(savedCheck).toForm(on: request)
+                            return try request.authorizedUser().flatMap { user in
+                                return savedCheck.users.attach(user, on: request).flatMap { checkUser in
+                                    return request.future(savedCheck).toForm(on: request)
+                                }
+                            }
                         }
                     }
                 }
+        }
+    }
+
+    func fetch(on request: Request) throws -> Future<[Check.Form]> {
+        return try request.authorizedUser().flatMap { user in
+            return try user.checks.query(on: request).all().flatMap { checks in
+                return checks.map { check in
+                    return request.future(check).toForm(on: request)
+                }.flatten(on: request)
+            }
         }
     }
 }

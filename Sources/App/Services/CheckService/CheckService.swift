@@ -12,4 +12,5 @@ protocol CheckService {
     // MARK: - Instance Methods
 
     func create(on request: Request, form: Check.QRCodeForm) throws -> Future<Check.Form>
+    func fetch(on request: Request) throws -> Future<[Check.Form]>
 }

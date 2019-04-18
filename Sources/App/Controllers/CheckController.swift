@@ -24,6 +24,10 @@ final class CheckController {
     func create(_ request: Request, form: Check.QRCodeForm) throws -> Future<Check.Form> {
         return try self.checkService.create(on: request, form: form)
     }
+
+    func fetch(_ request: Request) throws -> Future<[Check.Form]> {
+        return try self.checkService.fetch(on: request)
+    }
 }
 
 extension CheckController: RouteCollection {
@@ -34,5 +38,6 @@ extension CheckController: RouteCollection {
         let group = router.grouped("v1/checks").grouped(Logger()).grouped(JWTMiddleware())
 
         group.post(Check.QRCodeForm.self, use: self.create)
+        group.get(use: self.fetch)
     }
 }

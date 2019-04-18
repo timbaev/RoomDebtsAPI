@@ -44,7 +44,7 @@ final class Check: Object {
 
         let id: Int?
         let date: Date
-        let store: String?
+        let store: String
         let totalSum: Double
         let address: String
         let status: String
