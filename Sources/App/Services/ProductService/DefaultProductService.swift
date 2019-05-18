@@ -36,4 +36,18 @@ class DefaultProductService: ProductService {
                 }
             }
     }
+
+    func fetch(on request: Request, for check: Check) throws -> Future<ProductsDto> {
+        return try check.products.query(on: request).all().flatMap { products in
+            return products.map { request.future($0).toForm(on: request) }
+                .flatten(on: request)
+                .flatMap { productForms in
+                    return try check.users.query(on: request).all().map { users in
+                        return users.map { User.PublicForm(user: $0) }
+                    }.map { userForms in
+                        return ProductsDto(products: productForms, users: userForms)
+                    }
+            }
+        }
+    }
 }

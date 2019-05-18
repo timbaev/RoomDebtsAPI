@@ -7,17 +7,12 @@
 
 import Vapor
 
-final class CheckController {
+struct CheckController {
 
     // MARK: - Instance Properties
 
     let checkService: CheckService
-
-    // MARK: - Initializers
-
-    init(checkService: CheckService) {
-        self.checkService = checkService
-    }
+    let productService: ProductService
 
     // MARK: - Instance Methods
 
@@ -27,6 +22,12 @@ final class CheckController {
 
     func fetch(_ request: Request) throws -> Future<[Check.Form]> {
         return try self.checkService.fetch(on: request)
+    }
+
+    func fetchProducts(_ request: Request) throws -> Future<ProductsDto> {
+        return try request.parameters.next(Check.self).flatMap { check in
+            return try self.productService.fetch(on: request, for: check)
+        }
     }
 }
 
@@ -39,5 +40,7 @@ extension CheckController: RouteCollection {
 
         group.post(Check.QRCodeForm.self, use: self.create)
         group.get(use: self.fetch)
+
+        group.get(Check.parameter, use: self.fetchProducts)
     }
 }

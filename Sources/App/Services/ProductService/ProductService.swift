@@ -12,4 +12,5 @@ protocol ProductService {
     // MARK: - Instance Methods
 
     func findOrCreate(on request: Request, for item: Item) -> Future<Product>
+    func fetch(on request: Request, for check: Check) throws -> Future<ProductsDto>
 }
