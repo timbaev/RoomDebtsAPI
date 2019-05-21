@@ -13,4 +13,5 @@ protocol CheckService {
 
     func create(on request: Request, form: Check.QRCodeForm) throws -> Future<Check.Form>
     func fetch(on request: Request) throws -> Future<[Check.Form]>
+    func update(on request: Request, check: Check, form: Check.StoreForm) throws -> Future<Check.Form>
 }

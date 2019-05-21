@@ -63,4 +63,14 @@ struct DefaultCheckService: CheckService {
             }
         }
     }
+
+    func update(on request: Request, check: Check, form: Check.StoreForm) throws -> Future<Check.Form> {
+        guard check.creatorID == request.userID else {
+            throw Abort(.forbidden, reason: "Only creator can change check store name")
+        }
+
+        check.store = form.store
+
+        return check.save(on: request).toForm(on: request)
+    }
 }

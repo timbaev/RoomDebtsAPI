@@ -36,6 +36,13 @@ final class Check: Object {
         let fn: String
     }
 
+    struct StoreForm: Content {
+
+        // MARK: - Instance Properties
+
+        let store: String
+    }
+
     // MARK: -
 
     struct Form: Content {

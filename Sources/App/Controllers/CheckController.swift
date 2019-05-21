@@ -29,7 +29,15 @@ struct CheckController {
             return try self.productService.fetch(on: request, for: check)
         }
     }
+
+    func update(_ request: Request, form: Check.StoreForm) throws -> Future<Check.Form> {
+        return try request.parameters.next(Check.self).flatMap { check in
+            return try self.checkService.update(on: request, check: check, form: form)
+        }
+    }
 }
+
+// MARK: - RouteCollection
 
 extension CheckController: RouteCollection {
 
@@ -42,5 +50,7 @@ extension CheckController: RouteCollection {
         group.get(use: self.fetch)
 
         group.get(Check.parameter, use: self.fetchProducts)
+
+        group.put(Check.StoreForm.self, at: Check.parameter, use: self.update)
     }
 }
