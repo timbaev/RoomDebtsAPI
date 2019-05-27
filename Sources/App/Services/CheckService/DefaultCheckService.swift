@@ -76,6 +76,10 @@ struct DefaultCheckService: CheckService {
     }
 
     func uploadImage(on request: Request, file: File, check: Check) throws -> Future<Check.Form> {
+        guard check.creatorID == request.userID else {
+            throw Abort(.forbidden, reason: "Only creator can change check image")
+        }
+
         if let checkImage = check.image {
             return checkImage.get(on: request).flatMap { fileRecord in
                 return try self.fileService.remove(request: request, fileRecord: fileRecord).flatMap {
