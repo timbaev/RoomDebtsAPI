@@ -14,6 +14,7 @@ struct DefaultCheckService: CheckService {
 
     let receiptManager: ReceiptManager
     let productService: ProductService
+    let fileService: FileService
 
     // MARK: - Instance Methods
 
@@ -72,5 +73,25 @@ struct DefaultCheckService: CheckService {
         check.store = form.store
 
         return check.save(on: request).toForm(on: request)
+    }
+
+    func uploadImage(on request: Request, file: File, check: Check) throws -> Future<Check.Form> {
+        if let checkImage = check.image {
+            return checkImage.get(on: request).flatMap { fileRecord in
+                return try self.fileService.remove(request: request, fileRecord: fileRecord).flatMap {
+                    return try self.fileService.uploadImage(on: request, file: file).flatMap { fileRecord in
+                        check.imageID = try fileRecord.requireID()
+
+                        return check.save(on: request).toForm(on: request)
+                    }
+                }
+            }
+        } else {
+            return try self.fileService.uploadImage(on: request, file: file).flatMap { fileRecord in
+                check.imageID = try fileRecord.requireID()
+
+                return check.save(on: request).toForm(on: request)
+            }
+        }
     }
 }

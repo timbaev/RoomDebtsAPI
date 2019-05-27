@@ -176,11 +176,19 @@ class DefaultAccountService: AccountService {
             if let userImage = user.image {
                 return userImage.get(on: request).flatMap { fileRecord in
                     return try self.fileService.remove(request: request, fileRecord: fileRecord).flatMap {
-                        return try self.fileService.uploadImage(request: request, file: file, user: user)
+                        return try self.fileService.uploadImage(on: request, file: file).flatMap { fileRecord in
+                            user.imageID = try fileRecord.requireID()
+
+                            return user.save(on: request).toForm()
+                        }
                     }
                 }
             } else {
-                return try self.fileService.uploadImage(request: request, file: file, user: user)
+                return try self.fileService.uploadImage(on: request, file: file).flatMap { fileRecord in
+                    user.imageID = try fileRecord.requireID()
+
+                    return user.save(on: request).toForm()
+                }
             }
         }
     }

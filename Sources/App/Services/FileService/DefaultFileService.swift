@@ -39,27 +39,24 @@ class DefaultFileService: FileService {
         
         return fileRecord.delete(on: request).transform(to: ())
     }
-    
-    func uploadImage(request: Request, file: File, user: User) throws -> Future<User.Form> {
+
+    func uploadImage(on request: Request, file: File) throws -> Future<FileRecord> {
         let workDir = DirectoryConfig.detect().workDir
         let fileStorage = Environment.STORAGE_PATH.convertToPathComponents().readable + "/" + (file.extension ?? "other")
         let path = URL(fileURLWithPath: workDir).appendingPathComponent(fileStorage, isDirectory: true)
-        
+
         if !FileManager.default.fileExists(atPath: path.absoluteString) {
             try FileManager.default.createDirectory(at: path, withIntermediateDirectories: true, attributes: nil)
         }
-        
+
         let key = try CryptoRandom().generateData(count: 16).base64URLEncodedString()
         let encodedFilename = key + "." + (file.extension ?? "")
         let writePath = path.appendingPathComponent(encodedFilename, isDirectory: false)
-        
+
         try file.data.write(to: writePath, options: .withoutOverwriting)
-        
+
         let localPath = fileStorage + "/" + encodedFilename
-        
-        return FileRecord(filename: file.filename, fileKind: file.extension, localPath: localPath).save(on: request).flatMap { fileRecord in
-            user.imageID = try fileRecord.requireID()
-            return user.save(on: request).toForm()
-        }
+
+        return FileRecord(filename: file.filename, fileKind: file.extension, localPath: localPath).save(on: request)
     }
 }

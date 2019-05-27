@@ -35,6 +35,14 @@ struct CheckController {
             return try self.checkService.update(on: request, check: check, form: form)
         }
     }
+
+    func uploadImage(_ request: Request) throws -> Future<Check.Form> {
+        return try request.content.decode(File.self).flatMap { file in
+            return try request.parameters.next(Check.self).flatMap { check in
+                return try self.checkService.uploadImage(on: request, file: file, check: check)
+            }
+        }
+    }
 }
 
 // MARK: - RouteCollection
@@ -52,5 +60,6 @@ extension CheckController: RouteCollection {
         group.get(Check.parameter, use: self.fetchProducts)
 
         group.put(Check.StoreForm.self, at: Check.parameter, use: self.update)
+        group.put(Check.parameter, "image", use: self.uploadImage)
     }
 }
