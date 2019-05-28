@@ -141,7 +141,6 @@ extension Check {
             try self.addProperties(to: builder)
 
             builder.reference(from: \.creatorID, to: \User.id)
-            builder.reference(from: \.imageID, to: \FileRecord.id, onDelete: .cascade)
         }
     }
 }
