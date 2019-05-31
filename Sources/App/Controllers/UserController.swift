@@ -26,6 +26,10 @@ final class UserController {
         
         return try self.userService.search(request: request, keyword: keyword)
     }
+
+    func inviteList(_ request: Request) throws -> Future<[User.PublicForm]> {
+        return try self.userService.fetchInviteList(on: request)
+    }
 }
 
 // MARK: - RouteCollection
@@ -37,6 +41,7 @@ extension UserController: RouteCollection {
     func boot(router: Router) throws {
         let group = router.grouped("v1/users").grouped(Logger()).grouped(JWTMiddleware())
         
-        group.get("/search", String.parameter, use: self.search)
+        group.get("search", String.parameter, use: self.search)
+        group.get("invite", use: self.inviteList)
     }
 }

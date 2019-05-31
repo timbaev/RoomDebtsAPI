@@ -178,4 +178,10 @@ extension Future where T: User {
             })
         })
     }
+
+    func toPublicForm() -> Future<User.PublicForm> {
+        return self.map(to: User.PublicForm.self, { user in
+            return User.PublicForm(user: user)
+        })
+    }
 }

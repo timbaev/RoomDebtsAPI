@@ -26,4 +26,30 @@ class DefaultUserService: UserService {
             })
         }
     }
+
+    func fetchInviteList(on request: Request) throws -> Future<[User.PublicForm]> {
+        return try request.authorizedUser().flatMap { user in
+            return try user
+                .asCreatorConversations
+                .query(on: request)
+                .filter(\.status == .accepted)
+                .all()
+                .and(user.asDebtorConversations.query(on: request).filter(\.status == .accepted).all())
+                .flatMap { creatorConversations, debtorConversations in
+                    var opponents: [Future<User>] = []
+
+                    creatorConversations.forEach { conversation in
+                        opponents.append(conversation.opponent.get(on: request))
+                    }
+
+                    debtorConversations.forEach { conversation in
+                        opponents.append(conversation.creator.get(on: request))
+                    }
+
+                    return opponents.map { opponent in
+                        return opponent.toPublicForm()
+                    }.flatten(on: request)
+            }
+        }
+    }
 }
