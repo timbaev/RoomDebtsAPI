@@ -43,6 +43,12 @@ struct CheckController {
             }
         }
     }
+
+    func addParticipants(_ request: Request, usersForm: Check.UsersForm) throws -> Future<ProductsDto> {
+        return try request.parameters.next(Check.self).flatMap { check in
+            return try self.checkService.addParticipants(on: request, check: check, userIDs: usersForm.userIDs)
+        }
+    }
 }
 
 // MARK: - RouteCollection
@@ -61,5 +67,7 @@ extension CheckController: RouteCollection {
 
         group.put(Check.StoreForm.self, at: Check.parameter, use: self.update)
         group.put(Check.parameter, "image", use: self.uploadImage)
+
+        group.post(Check.UsersForm.self, at: Check.parameter, "participants", use: self.addParticipants)
     }
 }

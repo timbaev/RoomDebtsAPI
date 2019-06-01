@@ -98,4 +98,34 @@ struct DefaultCheckService: CheckService {
             }
         }
     }
+
+    func addParticipants(on request: Request, check: Check, userIDs: [Int]) throws -> Future<ProductsDto> {
+        guard check.creatorID == request.userID else {
+            throw Abort(.forbidden, reason: "Only creator can add participants")
+        }
+
+        // TODO: - Validate userIDs in user's debt conversations
+
+        return try check.users.query(on: request).group(.or, closure: { filterBuilder in
+            userIDs.forEach { userID in
+                filterBuilder.filter(\.id == userID)
+            }
+        }).all().flatMap { existingCheckUsers in
+            guard existingCheckUsers.isEmpty else {
+                let userNames = existingCheckUsers.map { $0.firstName }.joined(separator: ", ")
+
+                throw Abort(.badRequest, reason: "User(s) \(userNames) already added to check")
+            }
+
+            return userIDs.map { userID in
+                return User.find(userID, on: request).unwrap(or: Abort(.notFound, reason: "User not found"))
+            }.flatten(on: request).flatMap { users in
+                    return users.map { user in
+                        return check.users.attach(user, on: request)
+                    }.flatten(on: request)
+            }.flatMap { attachedCheckUsers in
+                return try self.productService.fetch(on: request, for: check)
+            }
+        }
+    }
 }

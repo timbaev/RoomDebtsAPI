@@ -15,4 +15,5 @@ protocol CheckService {
     func fetch(on request: Request) throws -> Future<[Check.Form]>
     func update(on request: Request, check: Check, form: Check.StoreForm) throws -> Future<Check.Form>
     func uploadImage(on request: Request, file: File, check: Check) throws -> Future<Check.Form>
+    func addParticipants(on request: Request, check: Check, userIDs: [Int]) throws -> Future<ProductsDto>
 }
