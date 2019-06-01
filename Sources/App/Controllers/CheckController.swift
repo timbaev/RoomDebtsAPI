@@ -49,6 +49,16 @@ struct CheckController {
             return try self.checkService.addParticipants(on: request, check: check, userIDs: usersForm.userIDs)
         }
     }
+
+    func removeParticipant(_ request: Request) throws -> Future<ProductsDto> {
+        guard let userID = request.query[Int.self, at: "userID"] else {
+            throw Abort(.badRequest)
+        }
+
+        return try request.parameters.next(Check.self).flatMap { check in
+            return try self.checkService.removeParticipant(on: request, check: check, userID: userID)
+        }
+    }
 }
 
 // MARK: - RouteCollection
@@ -69,5 +79,6 @@ extension CheckController: RouteCollection {
         group.put(Check.parameter, "image", use: self.uploadImage)
 
         group.post(Check.UsersForm.self, at: Check.parameter, "participants", use: self.addParticipants)
+        group.delete(Check.parameter, "participants", use: self.removeParticipant)
     }
 }

@@ -128,4 +128,20 @@ struct DefaultCheckService: CheckService {
             }
         }
     }
+
+    func removeParticipant(on request: Request, check: Check, userID: Int) throws -> Future<ProductsDto> {
+        guard check.creatorID == request.userID else {
+            throw Abort(.forbidden, reason: "Only creator can remove participants")
+        }
+
+        return try check.users.query(on: request).filter(\.id == userID).all().flatMap { checkUsers in
+            guard let checkUser = checkUsers.first else {
+                throw Abort(.badRequest, reason: "User not found")
+            }
+
+            return check.users.detach(checkUser, on: request).flatMap { _ in
+                return try self.productService.fetch(on: request, for: check)
+            }
+        }
+    }
 }
