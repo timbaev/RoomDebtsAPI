@@ -59,6 +59,18 @@ struct CheckController {
             return try self.checkService.removeParticipant(on: request, check: check, userID: userID)
         }
     }
+
+    func calculate(_ request: Request, dto: SelectedProductsDto) throws -> Future<[CheckUser.Form]> {
+        return try request.parameters.next(Check.self).flatMap { check in
+            return try self.checkService.calculate(on: request, check: check, selectedProducts: dto.selectedProducts)
+        }
+    }
+
+    func fetchReviews(_ request: Request) throws -> Future<[CheckUser.Form]> {
+        return try request.parameters.next(Check.self).flatMap { check in
+            return try self.checkService.fetchReviews(on: request, check: check)
+        }
+    }
 }
 
 // MARK: - RouteCollection
@@ -80,5 +92,9 @@ extension CheckController: RouteCollection {
 
         group.post(Check.UsersForm.self, at: Check.parameter, "participants", use: self.addParticipants)
         group.delete(Check.parameter, "participants", use: self.removeParticipant)
+
+        group.post(SelectedProductsDto.self, at: Check.parameter, "calculate", use: self.calculate)
+
+        group.get(Check.parameter, "reviews", use: self.fetchReviews)
     }
 }

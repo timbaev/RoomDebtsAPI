@@ -38,4 +38,22 @@ extension String {
             return (matche: nil, updated: self)
         }
     }
+
+    func matche(_ regex: String) -> String? {
+        guard let regex = try? NSRegularExpression(pattern: regex) else {
+            return nil
+        }
+
+         let results = regex.matches(in: self, range: NSRange(self.startIndex..., in: self))
+
+        if let result = results.first {
+            guard let range = Range(result.range, in: self) else {
+                return nil
+            }
+
+            return String(self[range])
+        } else {
+            return nil
+        }
+    }
 }

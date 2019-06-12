@@ -18,6 +18,14 @@ struct DefaultCheckService: CheckService {
 
     // MARK: - Instance Methods
 
+    private func convertToCheckUserForm(on request: Request, checkUser: CheckUser) throws -> Future<CheckUser.Form> {
+        return User.find(checkUser.userID, on: request).unwrap(or: Abort(.notFound)).map { user in
+            return CheckUser.Form(checkUser: checkUser, user: user)
+        }
+    }
+
+    // MARK: - CheckService
+
     func create(on request: Request, form: Check.QRCodeForm) throws -> Future<Check.Form> {
         return Check.query(on: request)
             .filter(\.fd == form.fd)
@@ -38,15 +46,15 @@ struct DefaultCheckService: CheckService {
                         let check = Check(receipt: receipt, creatorID: try request.requiredUserID())
 
                         return check.save(on: request).flatMap { savedCheck in
-                            for item in receipt.items {
-                                _ = self.productService.findOrCreate(on: request, for: item).flatMap { product in
+                            return receipt.items.map { item in
+                                return self.productService.findOrCreate(on: request, for: item).flatMap { product in
                                     savedCheck.products.attach(product, on: request)
                                 }
-                            }
-
-                            return try request.authorizedUser().flatMap { user in
-                                return savedCheck.users.attach(user, on: request).flatMap { checkUser in
-                                    return request.future(savedCheck).toForm(on: request)
+                            }.flatten(on: request).flatMap { checkProducts in
+                                return try request.authorizedUser().flatMap { user in
+                                    return savedCheck.users.attach(user, on: request).flatMap { checkUser in
+                                        return request.future(savedCheck).toForm(on: request)
+                                    }
                                 }
                             }
                         }
@@ -142,6 +150,100 @@ struct DefaultCheckService: CheckService {
             return check.users.detach(checkUser, on: request).flatMap { _ in
                 return try self.productService.fetch(on: request, for: check)
             }
+        }
+    }
+
+    func calculate(on request: Request, check: Check, selectedProducts: [Product.ID: [User.ID]]) throws -> Future<[CheckUser.Form]> {
+        guard check.creatorID == request.userID else {
+            throw Abort(.forbidden, reason: "Only creator can calculate check")
+        }
+
+        guard check.status != .accepted else {
+            throw Abort(.badRequest, reason: "Check already accepted")
+        }
+
+        let selectedProductIDs = selectedProducts.map { $0.key }
+
+        return try check.products.query(on: request).all().flatMap { products in
+            guard selectedProductIDs.count == products.count else {
+                throw Abort(.badRequest, reason: "All products should be selected")
+            }
+
+            var usersTotal: [User.ID: Double] = [:]
+            var userProducts: [User.ID: [Product]] = [:]
+
+            try selectedProducts.forEach { productID, userIDs in
+                guard let product = products.first(where: { $0.id == productID }) else {
+                    throw Abort(.notFound, reason: "Product with ID \(productID) not found")
+                }
+
+                let total = product.price / Double(userIDs.count)
+
+                userIDs.forEach { userID in
+                    if let userTotal = usersTotal[userID] {
+                        usersTotal[userID] = userTotal + total
+                    } else {
+                        usersTotal[userID] = total
+                    }
+
+                    if userProducts[userID] == nil {
+                        userProducts[userID] = [product]
+                    } else {
+                        userProducts[userID]?.append(product)
+                    }
+                }
+            }
+
+            return try check.users.pivots(on: request).all().flatMap { checkUsers in
+                var savedCheckUserFutures: [Future<CheckUser>] = []
+
+                try usersTotal.forEach { userID, total in
+                    guard var checkUser = checkUsers.first(where: { $0.userID == userID }) else {
+                        throw Abort(.notFound, reason: "User with ID \(userID) not found in CheckUsers")
+                    }
+
+                    guard let products = userProducts[userID] else {
+                        throw Abort(.badRequest, reason: "All users should be with selected products")
+                    }
+
+                    checkUser.total = total
+                    checkUser.status = .review
+                    checkUser.comment = nil
+                    checkUser.reviewDate = nil
+
+                    let savedCheckUserFuture = checkUser.products.detachAll(on: request).flatMap { _ in
+                        return products.map { product in
+                            return checkUser.products.attach(product, on: request)
+                        }.flatten(on: request).flatMap { productCheckUser in
+                            return checkUser.save(on: request)
+                        }
+                    }
+
+                    savedCheckUserFutures.append(savedCheckUserFuture)
+                }
+
+                return savedCheckUserFutures.flatten(on: request).flatMap { savedCheckUsers in
+                    check.status = .calculated
+
+                    return check.save(on: request).flatMap { savedCheck in
+                        return try savedCheckUsers.map {
+                            try self.convertToCheckUserForm(on: request, checkUser: $0)
+                        }.flatten(on: request)
+                    }
+                }
+            }
+        }
+    }
+
+    func fetchReviews(on request: Request, check: Check) throws -> Future<[CheckUser.Form]> {
+        return try check.users.pivots(on: request).all().flatMap { checkUsers in
+            guard checkUsers.contains(where: { $0.userID == request.userID }) else {
+                throw Abort(.forbidden)
+            }
+
+            return try checkUsers.map { checkUser in
+                return try self.convertToCheckUserForm(on: request, checkUser: checkUser)
+            }.flatten(on: request)
         }
     }
 }

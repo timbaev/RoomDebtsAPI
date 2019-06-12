@@ -16,9 +16,9 @@ class DefaultProductService: ProductService {
         let sum = Double(item.sum) / 100
         let price = Double(item.price) / 100
 
-        let result = item.name.matcheAndDelete(for: #"\*?\d{3,7}"#)
-        let barcode = result.matche
-        let name = result.updated.condenseWhitespace
+        let result = item.name.matche(#"\*?\d{3,7}"#)
+        let barcode = result
+        let name = item.name.condenseWhitespace
 
         return Product
             .query(on: request)

@@ -21,6 +21,31 @@ struct CheckUser: PostgreSQLPivot {
         case rejected
     }
 
+    // MARK: -
+
+    struct Form: Content {
+
+        // MARK: - Instance Properties
+
+        var id: CheckUser.ID?
+        var user: User.PublicForm
+        var status: String
+        var comment: String?
+        var total: Double?
+        var reviewDate: Date?
+
+        // MARK: - Initializers
+
+        init(checkUser: CheckUser, user: User) {
+            self.id = checkUser.id
+            self.user = User.PublicForm(user: user)
+            self.status = checkUser.status.rawValue
+            self.comment = checkUser.comment
+            self.total = checkUser.total
+            self.reviewDate = checkUser.reviewDate
+        }
+    }
+
     // MARK: - Typealiases
 
     typealias Left = Check
@@ -38,6 +63,8 @@ struct CheckUser: PostgreSQLPivot {
     var userID: User.ID
     var status: Status
     var comment: String?
+    var total: Double?
+    var reviewDate: Date?
 }
 
 // MARK: -
