@@ -19,4 +19,7 @@ protocol CheckService {
     func removeParticipant(on request: Request, check: Check, userID: Int) throws -> Future<ProductsDto>
     func calculate(on request: Request, check: Check, selectedProducts: [Product.ID: [User.ID]]) throws -> Future<[CheckUser.Form]>
     func fetchReviews(on request: Request, check: Check) throws -> Future<[CheckUser.Form]>
+    func approve(on request: Request, check: Check) throws -> Future<[CheckUser.Form]>
+    func reject(on request: Request, check: Check, dto: CheckRejectDto) throws -> Future<[CheckUser.Form]>
+    func fetch(on request: Request, check: Check) throws -> Future<Check.Form>
 }

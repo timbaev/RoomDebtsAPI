@@ -207,7 +207,7 @@ struct DefaultCheckService: CheckService {
                     }
 
                     checkUser.total = total
-                    checkUser.status = .review
+                    checkUser.status = (userID == check.creatorID) ? .accepted : .review
                     checkUser.comment = nil
                     checkUser.reviewDate = nil
 
@@ -245,5 +245,65 @@ struct DefaultCheckService: CheckService {
                 return try self.convertToCheckUserForm(on: request, checkUser: checkUser)
             }.flatten(on: request)
         }
+    }
+
+    func approve(on request: Request, check: Check) throws -> Future<[CheckUser.Form]> {
+        guard check.status == .calculated || check.status == .rejected else {
+            throw Abort(.badRequest, reason: "Check should be calculated")
+        }
+
+        return try check.users.pivots(on: request).all().flatMap { checkUsers in
+            guard var checkUser = checkUsers.first(where: { $0.userID == request.userID }) else {
+                throw Abort(.forbidden, reason: "User is not participant of this check")
+            }
+
+            checkUser.reviewDate = Date()
+            checkUser.status = .accepted
+            checkUser.comment = nil
+
+            return checkUser.save(on: request).flatMap { savedCheckUser in
+                let acceptedCheckUsers = checkUsers.filter { $0.status == .accepted }
+
+                if acceptedCheckUsers.count == checkUsers.count {
+                    check.status = .accepted
+
+                    return check.save(on: request).flatMap { savedCheck in
+                        return try self.fetchReviews(on: request, check: savedCheck)
+                    }
+                } else {
+                    return try self.fetchReviews(on: request, check: check)
+                }
+            }
+        }
+    }
+
+    func reject(on request: Request, check: Check, dto: CheckRejectDto) throws -> Future<[CheckUser.Form]> {
+        return try check
+            .users
+            .pivots(on: request)
+            .filter(\.userID == request.requiredUserID())
+            .first()
+            .flatMap { checkUser in
+                guard var checkUser = checkUser else {
+                    throw Abort(.forbidden, reason: "User is not participant of this check")
+                }
+
+                checkUser.reviewDate = Date()
+                checkUser.status = .rejected
+                checkUser.comment = dto.comment
+
+                check.status = .rejected
+
+                return checkUser
+                    .save(on: request)
+                    .and(check.save(on: request))
+                    .flatMap { savedCheckUser, savedCheck in
+                        return try self.fetchReviews(on: request, check: check)
+                }
+        }
+    }
+
+    func fetch(on request: Request, check: Check) throws -> Future<Check.Form> {
+        return check.toForm(on: request)
     }
 }

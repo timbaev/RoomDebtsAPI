@@ -20,7 +20,7 @@ struct CheckController {
         return try self.checkService.create(on: request, form: form)
     }
 
-    func fetch(_ request: Request) throws -> Future<[Check.Form]> {
+    func fetchAll(_ request: Request) throws -> Future<[Check.Form]> {
         return try self.checkService.fetch(on: request)
     }
 
@@ -71,6 +71,24 @@ struct CheckController {
             return try self.checkService.fetchReviews(on: request, check: check)
         }
     }
+
+    func approve(_ request: Request) throws -> Future<[CheckUser.Form]> {
+        return try request.parameters.next(Check.self).flatMap { check in
+            return try self.checkService.approve(on: request, check: check)
+        }
+    }
+
+    func reject(_ request: Request, dto: CheckRejectDto) throws -> Future<[CheckUser.Form]> {
+        return try request.parameters.next(Check.self).flatMap { check in
+            return try self.checkService.reject(on: request, check: check, dto: dto)
+        }
+    }
+
+    func fetch(_ request: Request) throws -> Future<Check.Form> {
+        return try request.parameters.next(Check.self).flatMap { check in
+            return try self.checkService.fetch(on: request, check: check)
+        }
+    }
 }
 
 // MARK: - RouteCollection
@@ -83,18 +101,19 @@ extension CheckController: RouteCollection {
         let group = router.grouped("v1/checks").grouped(Logger()).grouped(JWTMiddleware())
 
         group.post(Check.QRCodeForm.self, use: self.create)
-        group.get(use: self.fetch)
+        group.post(SelectedProductsDto.self, at: Check.parameter, "calculate", use: self.calculate)
+        group.post(Check.UsersForm.self, at: Check.parameter, "participants", use: self.addParticipants)
 
-        group.get(Check.parameter, use: self.fetchProducts)
+        group.get(use: self.fetchAll)
+        group.get(Check.parameter, use: self.fetch)
+        group.get(Check.parameter, "products", use: self.fetchProducts)
+        group.get(Check.parameter, "reviews", use: self.fetchReviews)
 
         group.put(Check.StoreForm.self, at: Check.parameter, use: self.update)
         group.put(Check.parameter, "image", use: self.uploadImage)
+        group.put(Check.parameter, "approve", use: self.approve)
+        group.put(CheckRejectDto.self, at: Check.parameter, "reject", use: self.reject)
 
-        group.post(Check.UsersForm.self, at: Check.parameter, "participants", use: self.addParticipants)
         group.delete(Check.parameter, "participants", use: self.removeParticipant)
-
-        group.post(SelectedProductsDto.self, at: Check.parameter, "calculate", use: self.calculate)
-
-        group.get(Check.parameter, "reviews", use: self.fetchReviews)
     }
 }

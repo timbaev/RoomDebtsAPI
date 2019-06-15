@@ -116,6 +116,14 @@ final class Check: Object {
         self.fd = receipt.fiscalDocumentNumber
         self.fiscalSign = receipt.fiscalSign
     }
+
+    // MARK: - Instance Methods
+
+    func toForm(on request: Request) -> Future<Check.Form> {
+        return self.creator.get(on: request).map { creator in
+            return Check.Form(check: self, creator: creator)
+        }
+    }
 }
 
 // MARK: -
