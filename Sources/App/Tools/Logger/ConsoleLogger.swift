@@ -1,5 +1,5 @@
 //
-//  Logger.swift
+//  ConsoleLogger.swift
 //  App
 //
 //  Created by Timur Shafigullin on 23/01/2019.
@@ -7,7 +7,7 @@
 
 import Vapor
 
-class Logger: Middleware {
+class ConsoleLogger: Middleware {
     
     // MARK: - Instance Properties
     

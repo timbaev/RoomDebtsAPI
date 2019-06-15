@@ -98,7 +98,7 @@ extension CheckController: RouteCollection {
     // MARK: - Instance Methods
 
     func boot(router: Router) throws {
-        let group = router.grouped("v1/checks").grouped(Logger()).grouped(JWTMiddleware())
+        let group = router.grouped("v1/checks").grouped(ConsoleLogger()).grouped(JWTMiddleware())
 
         group.post(Check.QRCodeForm.self, use: self.create)
         group.post(SelectedProductsDto.self, at: Check.parameter, "calculate", use: self.calculate)

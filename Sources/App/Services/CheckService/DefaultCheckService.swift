@@ -163,6 +163,7 @@ struct DefaultCheckService: CheckService {
         }
 
         let selectedProductIDs = selectedProducts.map { $0.key }
+        let usersIDs = selectedProducts.values.flatMap { $0 }.unique()
 
         return try check.products.query(on: request).all().flatMap { products in
             guard selectedProductIDs.count == products.count else {
@@ -195,6 +196,10 @@ struct DefaultCheckService: CheckService {
             }
 
             return try check.users.pivots(on: request).all().flatMap { checkUsers in
+                guard checkUsers.count == usersIDs.count else {
+                    throw Abort(.badRequest, reason: "All users should be with selected products")
+                }
+
                 var savedCheckUserFutures: [Future<CheckUser>] = []
 
                 try usersTotal.forEach { userID, total in

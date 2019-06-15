@@ -39,7 +39,7 @@ extension UserController: RouteCollection {
     // MARK: - Instance Methods
     
     func boot(router: Router) throws {
-        let group = router.grouped("v1/users").grouped(Logger()).grouped(JWTMiddleware())
+        let group = router.grouped("v1/users").grouped(ConsoleLogger()).grouped(JWTMiddleware())
         
         group.get("search", String.parameter, use: self.search)
         group.get("invite", use: self.inviteList)

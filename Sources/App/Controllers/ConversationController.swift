@@ -75,7 +75,7 @@ extension ConversationController: RouteCollection {
     // MARK: - Instance Methods
     
     func boot(router: Router) throws {
-        let group = router.grouped("v1/conversations").grouped(Logger()).grouped(JWTMiddleware())
+        let group = router.grouped("v1/conversations").grouped(ConsoleLogger()).grouped(JWTMiddleware())
         
         group.post(Conversation.CreateForm.self, use: self.create)
         group.get(use: self.fetch)

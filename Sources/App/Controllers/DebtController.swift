@@ -77,7 +77,7 @@ extension DebtController: RouteCollection {
     // MARK: - Instance Methods
 
     func boot(router: Router) throws {
-        let group = router.grouped("v1/debts").grouped(Logger()).grouped(JWTMiddleware())
+        let group = router.grouped("v1/debts").grouped(ConsoleLogger()).grouped(JWTMiddleware())
 
         group.post(Debt.CreateForm.self, use: self.create)
         group.get(use: self.fetch)

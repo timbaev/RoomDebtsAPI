@@ -37,7 +37,7 @@ extension FileController: RouteCollection {
     // MARK: - Instance Methods
     
     func boot(router: Router) throws {
-        let group = router.grouped(FileRecord.path).grouped(Logger())
+        let group = router.grouped(FileRecord.path).grouped(ConsoleLogger())
         
         group.get(FileRecord.parameter, use: self.download)
     }
