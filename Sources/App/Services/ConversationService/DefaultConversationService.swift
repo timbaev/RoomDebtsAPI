@@ -222,25 +222,42 @@ class DefaultConversationService: ConversationService {
             throw Abort(.badRequest, reason: "Conversation should be approved")
         }
 
+        let opponentID = (conversation.creatorID == request.userID) ? conversation.opponentID : conversation.creatorID
+
         conversation.status = .repayRequest
         conversation.creatorID = try request.requiredUserID()
+        conversation.opponentID = opponentID
 
         return conversation.save(on: request).toForm(on: request)
     }
 
     func deleteRequest(on request: Request, conversation: Conversation) throws -> Future<Conversation.Form> {
-        guard try conversation.creatorID == request.requiredUserID() || conversation.opponentID == request.requiredUserID() else {
-            throw Abort(.badRequest, reason: "User is not participant of conversation")
+        let opponentID = (conversation.creatorID == request.userID) ? conversation.opponentID : conversation.creatorID
+        let userID = try request.requiredUserID()
+
+        return CheckUser.query(on: request).join(\Check.id, to: \CheckUser.checkID).filter(\Check.status != .closed).group(.or, closure: { builder in
+            builder.filter(\Check.creatorID == userID).filter(\Check.creatorID == opponentID)
+        }).group(.or, closure: { builder in
+            builder.filter(\CheckUser.userID == userID).filter(\CheckUser.userID == opponentID)
+        }).count().flatMap { commonCheckCount in
+            guard commonCheckCount == 0 else {
+                throw Abort(.badRequest, reason: "Unable to delete the conversation because with this user you have a common undistributed check. You can remove this person from the check and then try again.")
+            }
+
+            guard try conversation.creatorID == request.requiredUserID() || conversation.opponentID == request.requiredUserID() else {
+                throw Abort(.badRequest, reason: "User is not participant of conversation")
+            }
+
+            guard conversation.status == .accepted || conversation.status == .repayRequest else {
+                throw Abort(.badRequest, reason: "Conversation should be approved")
+            }
+
+            conversation.status = .deleteRequest
+            conversation.creatorID = try request.requiredUserID()
+            conversation.opponentID = opponentID
+
+            return conversation.save(on: request).toForm(on: request)
         }
-
-        guard conversation.status == .accepted || conversation.status == .repayRequest else {
-            throw Abort(.badRequest, reason: "Conversation should be approved")
-        }
-
-        conversation.status = .deleteRequest
-        conversation.creatorID = try request.requiredUserID()
-
-        return conversation.save(on: request).toForm(on: request)
     }
 
     func cancelRequest(on request: Request, conversation: Conversation) throws -> Future<Conversation.Form> {
@@ -252,8 +269,11 @@ class DefaultConversationService: ConversationService {
             throw Abort(.badRequest)
         }
 
+        let opponentID = (conversation.creatorID == request.userID) ? conversation.opponentID : conversation.creatorID
+
         conversation.status = .accepted
         conversation.creatorID = try request.requiredUserID()
+        conversation.opponentID = opponentID
 
         return conversation.save(on: request).toForm(on: request)
     }
