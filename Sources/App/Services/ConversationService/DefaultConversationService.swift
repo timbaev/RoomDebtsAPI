@@ -269,4 +269,12 @@ class DefaultConversationService: ConversationService {
 
         return conversation.delete(on: request)
     }
+
+    func find(on request: Request, participantIDs: [User.ID]) throws -> Future<Conversation> {
+        return Conversation.query(on: request).group(.or, closure: { builder in
+            builder.filter(\.creatorID == participantIDs[0]).filter(\.opponentID == participantIDs[0])
+        }).group(.or, closure: { builder in
+            builder.filter(\.creatorID == participantIDs[1]).filter(\.opponentID == participantIDs[1])
+        }).first().unwrap(or: Abort(.notFound))
+    }
 }

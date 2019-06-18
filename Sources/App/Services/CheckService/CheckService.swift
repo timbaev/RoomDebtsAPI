@@ -22,4 +22,5 @@ protocol CheckService {
     func approve(on request: Request, check: Check) throws -> Future<[CheckUser.Form]>
     func reject(on request: Request, check: Check, dto: CheckRejectDto) throws -> Future<[CheckUser.Form]>
     func fetch(on request: Request, check: Check) throws -> Future<Check.Form>
+    func distribute(on request: Request, check: Check) throws -> Future<Check.Form>
 }

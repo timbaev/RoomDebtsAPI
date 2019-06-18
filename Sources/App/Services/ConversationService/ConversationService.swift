@@ -24,4 +24,5 @@ protocol ConversationService {
     func deleteRequest(on request: Request, conversation: Conversation) throws -> Future<Conversation.Form>
     func cancelRequest(on request: Request, conversation: Conversation) throws -> Future<Conversation.Form>
 
+    func find(on request: Request, participantIDs: [User.ID]) throws -> Future<Conversation>
 }

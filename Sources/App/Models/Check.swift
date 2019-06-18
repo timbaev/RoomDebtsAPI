@@ -20,6 +20,7 @@ final class Check: Object {
         case calculated
         case notCalculated
         case rejected
+        case closed
     }
 
     // MARK: -

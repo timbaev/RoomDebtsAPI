@@ -230,4 +230,19 @@ class DefaultDebtService: DebtService {
             return debt.save(on: request).toForm(on: request)
         }
     }
+
+    func createAndAccept(on request: Request, form: Debt.CreateForm) throws -> Future<Response> {
+        return try self.create(request: request, form: form).flatMap { createdDebtForm in
+            guard let debtID = createdDebtForm.id else {
+                throw Abort(.notFound, reason: "Created debt ID not found")
+            }
+
+            return Debt
+                .find(debtID, on: request)
+                .unwrap(or: Abort(.notFound, reason: "Created debt ID not found"))
+                .flatMap { debt in
+                    return try self.accept(on: request, debt: debt)
+            }
+        }
+    }
 }

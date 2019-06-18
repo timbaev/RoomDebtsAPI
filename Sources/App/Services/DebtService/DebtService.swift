@@ -23,4 +23,6 @@ protocol DebtService {
     func delete(on request: Request, debt: Debt) throws -> Future<Void>
 
     func repayRequest(on request: Request, debt: Debt) throws -> Future<Debt.Form>
+
+    func createAndAccept(on request: Request, form: Debt.CreateForm) throws -> Future<Response>
 }

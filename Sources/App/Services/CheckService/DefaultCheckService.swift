@@ -13,8 +13,11 @@ struct DefaultCheckService: CheckService {
     // MARK: - Instance Properties
 
     let receiptManager: ReceiptManager
+
     let productService: ProductService
     let fileService: FileService
+    let debtService: DebtService
+    let conversationService: ConversationService
 
     // MARK: - Instance Methods
 
@@ -269,7 +272,7 @@ struct DefaultCheckService: CheckService {
             return checkUser.save(on: request).flatMap { savedCheckUser in
                 let acceptedCheckUsers = checkUsers.filter { $0.status == .accepted }
 
-                if acceptedCheckUsers.count == checkUsers.count {
+                if acceptedCheckUsers.count + 1 == checkUsers.count {
                     check.status = .accepted
 
                     return check.save(on: request).flatMap { savedCheck in
@@ -310,5 +313,35 @@ struct DefaultCheckService: CheckService {
 
     func fetch(on request: Request, check: Check) throws -> Future<Check.Form> {
         return check.toForm(on: request)
+    }
+
+    func distribute(on request: Request, check: Check) throws -> Future<Check.Form> {
+        guard check.status == .accepted else {
+            throw Abort(.badRequest, reason: "Check should be accepted")
+        }
+
+        return try check.users.pivots(on: request).all().flatMap { checkUsers in
+            return try checkUsers.map { checkUser in
+                return try self.conversationService.find(on: request, participantIDs: [checkUser.userID, try request.requiredUserID()]).flatMap { conversation -> Future<Response> in
+                    let price = checkUser.total ?? 0.0
+                    let date = Date()
+                    let description = check.store
+                    let debtoID = checkUser.userID
+                    let conversationID = try conversation.requireID()
+
+                    let form = Debt.CreateForm(price: price,
+                                               date: date,
+                                               description: description,
+                                               debtorID: debtoID,
+                                               conversationID: conversationID)
+
+                    return try self.debtService.createAndAccept(on: request, form: form)
+                }
+            }.flatten(on: request).flatMap { responses in
+                check.status = .closed
+
+                return check.save(on: request).toForm(on: request)
+            }
+        }
     }
 }

@@ -89,6 +89,12 @@ struct CheckController {
             return try self.checkService.fetch(on: request, check: check)
         }
     }
+
+    func distribute(_ request: Request) throws -> Future<Check.Form> {
+        return try request.parameters.next(Check.self).flatMap { check in
+            return try self.checkService.distribute(on: request, check: check)
+        }
+    }
 }
 
 // MARK: - RouteCollection
@@ -103,6 +109,7 @@ extension CheckController: RouteCollection {
         group.post(Check.QRCodeForm.self, use: self.create)
         group.post(SelectedProductsDto.self, at: Check.parameter, "calculate", use: self.calculate)
         group.post(Check.UsersForm.self, at: Check.parameter, "participants", use: self.addParticipants)
+        group.post(Check.parameter, "distribute", use: self.distribute)
 
         group.get(use: self.fetchAll)
         group.get(Check.parameter, use: self.fetch)
