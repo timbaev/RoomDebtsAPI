@@ -135,7 +135,30 @@ struct DefaultCheckService: CheckService {
                         return check.users.attach(user, on: request)
                     }.flatten(on: request)
             }.flatMap { attachedCheckUsers in
-                return try self.productService.fetch(on: request, for: check)
+                if check.status == .notCalculated {
+                    return try self.productService.fetch(on: request, for: check)
+                } else {
+                    check.status = .notCalculated
+
+                    return try check.users.pivots(on: request).all().flatMap { checkUsers in
+                        return checkUsers.map { checkUser in
+                            var checkUser = checkUser
+
+                            checkUser.total = nil
+                            checkUser.status = .review
+                            checkUser.comment = nil
+                            checkUser.reviewDate = nil
+
+                            return checkUser.save(on: request).flatMap { savedCheckUser in
+                                return savedCheckUser.products.detachAll(on: request)
+                            }
+                        }.flatten(on: request).flatMap { _ in
+                                return check.save(on: request).flatMap { savedCheck in
+                                    return try self.productService.fetch(on: request, for: savedCheck)
+                            }
+                        }
+                    }
+                }
             }
         }
     }

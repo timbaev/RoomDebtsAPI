@@ -34,15 +34,15 @@ class DefaultUserService: UserService {
                 .query(on: request)
                 .filter(\.status == .accepted)
                 .all()
-                .and(user.asDebtorConversations.query(on: request).filter(\.status == .accepted).all())
-                .flatMap { creatorConversations, debtorConversations in
+                .and(user.asOpponentConversations.query(on: request).filter(\.status == .accepted).all())
+                .flatMap { creatorConversations, opponentConversations in
                     var opponents: [Future<User>] = []
 
                     creatorConversations.forEach { conversation in
                         opponents.append(conversation.opponent.get(on: request))
                     }
 
-                    debtorConversations.forEach { conversation in
+                    opponentConversations.forEach { conversation in
                         opponents.append(conversation.creator.get(on: request))
                     }
 
