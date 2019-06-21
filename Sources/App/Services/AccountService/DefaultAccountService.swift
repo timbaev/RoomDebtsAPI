@@ -52,7 +52,7 @@ class DefaultAccountService: AccountService {
                         .query(on: request)
                         .filter(\.userID == userID)
                         .first()
-                        .unwrap(or: Abort(.badRequest, reason: "Verification code not found"))
+                        .unwrap(or: Abort(.badRequest, reason: "account.service.verification.code.not.found".localized(on: request)))
                         .flatMap { verificationCode in
                             verificationCode.update()
 
@@ -63,7 +63,7 @@ class DefaultAccountService: AccountService {
                         }
                     }
                 } else {
-                    throw Abort(.badRequest, reason: "User with phone number \(userForm.phoneNumber) already exists")
+                    throw Abort(.badRequest, reason: "account.service.user.exists".localized(on: request, interpolations: ["phoneNumber": userForm.phoneNumber]))
                 }
             } else {
                 let user = User(firstName: userForm.firstName, lastName: userForm.lastName, phoneNumber: userForm.phoneNumber)
@@ -73,7 +73,7 @@ class DefaultAccountService: AccountService {
                     
                     return verificationCode
                         .save(on: request)
-                        .transform(to: ResponseDto(message: "Account created successfully"))
+                        .transform(to: ResponseDto(message: "account.service.created".localized(on: request)))
                 }
             }
         }
@@ -84,7 +84,7 @@ class DefaultAccountService: AccountService {
             .query(on: request)
             .filter(\.phoneNumber == confirmPhoneDto.phoneNumber)
             .first()
-            .unwrap(or: Abort(.badRequest, reason: "User with phone number \(confirmPhoneDto.phoneNumber) not found"))
+            .unwrap(or: Abort(.badRequest, reason: "account.service.phone.not.found".localized(on: request, interpolations: ["phoneNumber": confirmPhoneDto.phoneNumber])))
             .flatMap { user in
                 let userID = try user.requireID()
                 
@@ -92,14 +92,14 @@ class DefaultAccountService: AccountService {
                     .query(on: request)
                     .filter(\.userID == userID)
                     .first()
-                    .unwrap(or: Abort(.badRequest, reason: "Verification code not found"))
+                    .unwrap(or: Abort(.badRequest, reason: "account.service.code.not.found".localized(on: request)))
                     .flatMap { verificationCode in
                         guard verificationCode.expiredAt > Date() else {
-                            throw Abort(.badRequest, reason: "Verification code expired")
+                            throw Abort(.badRequest, reason: "account.service.code.expired".localized(on: request))
                         }
                     
                         guard verificationCode.code == confirmPhoneDto.code else {
-                            throw Abort(.badRequest, reason: "Invalid verification code")
+                            throw Abort(.badRequest, reason: "account.service.code.invalid".localized(on: request))
                         }
                     
                         user.isConfirmed = true
@@ -148,7 +148,7 @@ class DefaultAccountService: AccountService {
         .query(on: request)
         .filter(\.phoneNumber == phoneNumberDto.phoneNumber)
         .first()
-        .unwrap(or: Abort(.badRequest, reason: "User with phone number \(phoneNumberDto.phoneNumber) not found"))
+        .unwrap(or: Abort(.badRequest, reason: "account.service.phone.not.found".localized(on: request, interpolations: ["phoneNumber": phoneNumberDto.phoneNumber])))
         .flatMap { user in
             let userID = try user.requireID()
             
@@ -158,11 +158,11 @@ class DefaultAccountService: AccountService {
                     
                     return verificationCode
                         .update(on: request)
-                        .transform(to: ResponseDto(message: "Verification code sent"))
+                        .transform(to: ResponseDto(message: "account.service.code.sent".localized(on: request)))
                 } else {
                     return VerificationCode(userID: userID)
                         .save(on: request)
-                        .transform(to: ResponseDto(message: "Verification code sent"))
+                        .transform(to: ResponseDto(message: "account.service.code.sent".localized(on: request)))
                 }
             }
         }
@@ -207,7 +207,7 @@ class DefaultAccountService: AccountService {
                     .first()
                     .flatMap { existingUser in
                         guard existingUser == nil else {
-                            throw Abort(.badRequest, reason: "User with phone number already exists")
+                            throw Abort(.badRequest, reason: "account.service.user.exists".localized(on: request, interpolations: ["phoneNumber": form.phoneNumber]))
                         }
 
                         user.phoneNumber = form.phoneNumber

@@ -1,0 +1,10 @@
+{
+	"account.service.account.updated": "Account updated successfully",
+	"account.service.user.exists": "User with phone number %{phoneNumber} already exists",
+    "account.service.created": "Account created successfully",
+    "account.service.phone.not.found": "User with phone number %{phoneNumber} not found",
+    "account.service.code.not.found": "Verification code not found",
+    "account.service.code.expired": "Verification code expired",
+    "account.service.code.invalid": "Invalid verification code",
+    "account.service.code.sent": "Verification code sent"
+}

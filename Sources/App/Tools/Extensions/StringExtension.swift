@@ -6,6 +6,8 @@
 //
 
 import Foundation
+import Vapor
+import Lingo
 
 extension String {
 
@@ -54,6 +56,18 @@ extension String {
             return String(self[range])
         } else {
             return nil
+        }
+    }
+
+    func localized(on request: Request, interpolations: [String: Any]? = nil) -> String {
+        guard let lingo = try? request.make(Lingo.self) else {
+            fatalError("LingoProvider is not registered.")
+        }
+
+        if let localeIdentifier = request.http.headers[.acceptLanguage].first {
+            return lingo.localize(self, locale: localeIdentifier, interpolations: interpolations)
+        } else {
+            return lingo.localize(self, locale: lingo.defaultLocale, interpolations: interpolations)
         }
     }
 }

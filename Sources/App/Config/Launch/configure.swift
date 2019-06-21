@@ -1,5 +1,6 @@
 import FluentPostgreSQL
 import Vapor
+import LingoVapor
 
 /// Called before your application initializes.
 public func configure(_ config: inout Config, _ env: inout Environment, _ services: inout Services) throws {
@@ -73,4 +74,10 @@ public func configure(_ config: inout Config, _ env: inout Environment, _ servic
     // MARK: - NIOServerConfig
     
     services.register(NIOServerConfig.default(maxBodySize: 20_000_000))
+
+    // MARK: - LingoVapor
+
+    let lingoProvider = LingoProvider(defaultLocale: "en", localizationsDir: "Localizations")
+
+    try services.register(lingoProvider)
 }

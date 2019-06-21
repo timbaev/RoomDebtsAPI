@@ -1,0 +1,10 @@
+{
+	"account.service.account.updated": "Аккаунт успешно обновлен",
+	"account.service.user.exists": "Пользователь с номером телефона %{phoneNumber} уже существует",
+    "account.service.created": "Аккаунт успешно создан",
+    "account.service.phone.not.found": "Пользователь с номером телефона %{phoneNumber} не найден",
+    "account.service.code.not.found": "Код подтверждения не найден",
+    "account.service.code.expired": "Код подтверждения истек",
+    "account.service.code.invalid": "Неверный код подтверждения",
+    "account.service.code.sent": "Код подтверждения отправлен"
+}
