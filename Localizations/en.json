@@ -6,5 +6,22 @@
     "account.service.code.not.found": "Verification code not found",
     "account.service.code.expired": "Verification code expired",
     "account.service.code.invalid": "Invalid verification code",
-    "account.service.code.sent": "Verification code sent"
+    "account.service.code.sent": "Verification code sent",
+    "Check \"%{store}\" already exists": "Check \"%{store}\" already exists",
+    "Check not found on Federal Tax Service. Try again later": "Check not found on Federal Tax Service. Try again later",
+    "Only creator can change check store name": "Only creator can change check store name",
+    "Only creator can change check image": "Only creator can change check image",
+    "Only creator can add participants": "Only creator can add participants",
+    "User(s) %{userNames} already added to check": "User(s) %{userNames} already added to check",
+    "User not found": "User not found",
+    "Only creator can remove participants": "Only creator can remove participants",
+    "Only creator can calculate check": "Only creator can calculate check",
+    "Check already accepted": "Check already accepted",
+    "All products should be selected": "All products should be selected",
+    "Product with ID %{ID} not found": "Product with ID %{ID} not found",
+    "All users should be with selected products": "All users should be with selected products",
+    "User with ID %{ID} not found in CheckUsers": "User with ID %{ID} not found in CheckUsers",
+    "Check should be calculated": "Check should be calculated",
+    "User is not participant of this check": "User is not participant of this check",
+    "Check should be accepted": "Check should be accepted"
 }

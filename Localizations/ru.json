@@ -6,5 +6,22 @@
     "account.service.code.not.found": "Код подтверждения не найден",
     "account.service.code.expired": "Код подтверждения истек",
     "account.service.code.invalid": "Неверный код подтверждения",
-    "account.service.code.sent": "Код подтверждения отправлен"
+    "account.service.code.sent": "Код подтверждения отправлен",
+    "Check \"%{store}\" already exists": "Чек \"%{store}\" уже существует",
+    "Check not found on Federal Tax Service. Try again later": "Чек не найдена в Федеральной налоговой службе. Попробуйте позже",
+    "Only creator can change check store name": "Только создатель может изменить название чека",
+    "Only creator can change check image": "Только создатель может изменить изображение чека",
+    "Only creator can add participants": "Только создатель может добавить участников",
+    "User(s) %{userNames} already added to check": "Пользователь(и) %{userNames} уже добавлен(ы) в чек",
+    "User not found": "Пользователь не найден",
+    "Only creator can remove participants": "Только создатель может удалить участников",
+    "Only creator can calculate check": "Только создатель может рассчитать чек",
+    "Check already accepted": "Чек уже принят",
+    "All products should be selected": "Все продукты должны быть выбраны",
+    "Product with ID %{ID} not found": "Продукт с ID %{ID} не найден",
+    "All users should be with selected products": "Все пользователи должны быть с выбранными продуктами",
+    "User with ID %{ID} not found in CheckUsers": "Пользователь с ID %{ID} не найден в CheckUsers",
+    "Check should be calculated": "Чек должен быть рассчитан",
+    "User is not participant of this check": "Пользователь не является участником этого чека",
+    "Check should be accepted": "Чек должен быть принят"
 }

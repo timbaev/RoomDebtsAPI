@@ -58,12 +58,12 @@ struct DefaultCheckService: CheckService {
             .first()
             .flatMap { existsCheck in
                 guard existsCheck == nil else {
-                    throw Abort(.badRequest, reason: "Check \"\(existsCheck!.store)\" already exists")
+                    throw Abort(.badRequest, reason: "Check \"%{store}\" already exists".localized(on: request, interpolations: ["store": existsCheck!.store]))
                 }
 
                 return try self.receiptManager.checkReceiptExists(on: request, form: form).flatMap { checkExists in
                     guard checkExists else {
-                        throw Abort(.notFound, reason: "Check not found on Federal Tax Service. Try again later")
+                        throw Abort(.notFound, reason: "Check not found on Federal Tax Service. Try again later".localized(on: request))
                     }
 
                     return try self.receiptManager.fetchReceiptContent(on: request, form: form).flatMap { receipt in
@@ -99,7 +99,7 @@ struct DefaultCheckService: CheckService {
 
     func update(on request: Request, check: Check, form: Check.StoreForm) throws -> Future<Check.Form> {
         guard check.creatorID == request.userID else {
-            throw Abort(.forbidden, reason: "Only creator can change check store name")
+            throw Abort(.forbidden, reason: "Only creator can change check store name".localized(on: request))
         }
 
         check.store = form.store
@@ -109,7 +109,7 @@ struct DefaultCheckService: CheckService {
 
     func uploadImage(on request: Request, file: File, check: Check) throws -> Future<Check.Form> {
         guard check.creatorID == request.userID else {
-            throw Abort(.forbidden, reason: "Only creator can change check image")
+            throw Abort(.forbidden, reason: "Only creator can change check image".localized(on: request))
         }
 
         if let checkImage = check.image {
@@ -133,7 +133,7 @@ struct DefaultCheckService: CheckService {
 
     func addParticipants(on request: Request, check: Check, userIDs: [Int]) throws -> Future<ProductsDto> {
         guard check.creatorID == request.userID else {
-            throw Abort(.forbidden, reason: "Only creator can add participants")
+            throw Abort(.forbidden, reason: "Only creator can add participants".localized(on: request))
         }
 
         // TODO: - Validate userIDs in user's debt conversations
@@ -146,11 +146,13 @@ struct DefaultCheckService: CheckService {
             guard existingCheckUsers.isEmpty else {
                 let userNames = existingCheckUsers.map { $0.firstName }.joined(separator: ", ")
 
-                throw Abort(.badRequest, reason: "User(s) \(userNames) already added to check")
+                throw Abort(.badRequest, reason: "User(s) %{userNames} already added to check".localized(on: request, interpolations: ["userNames": userNames]))
             }
 
             return userIDs.map { userID in
-                return User.find(userID, on: request).unwrap(or: Abort(.notFound, reason: "User not found"))
+                return User
+                    .find(userID, on: request)
+                    .unwrap(or: Abort(.notFound, reason: "User not found".localized(on: request)))
             }.flatten(on: request).flatMap { users in
                     return users.map { user in
                         return check.users.attach(user, on: request)
@@ -169,12 +171,12 @@ struct DefaultCheckService: CheckService {
 
     func removeParticipant(on request: Request, check: Check, userID: Int) throws -> Future<ProductsDto> {
         guard check.creatorID == request.userID else {
-            throw Abort(.forbidden, reason: "Only creator can remove participants")
+            throw Abort(.forbidden, reason: "Only creator can remove participants".localized(on: request))
         }
 
         return try check.users.query(on: request).filter(\.id == userID).all().flatMap { checkUsers in
             guard let checkUser = checkUsers.first else {
-                throw Abort(.badRequest, reason: "User not found")
+                throw Abort(.badRequest, reason: "User not found".localized(on: request))
             }
 
             if check.status == .notCalculated {
@@ -193,11 +195,11 @@ struct DefaultCheckService: CheckService {
 
     func calculate(on request: Request, check: Check, selectedProducts: [Product.ID: [User.ID]]) throws -> Future<[CheckUser.Form]> {
         guard check.creatorID == request.userID else {
-            throw Abort(.forbidden, reason: "Only creator can calculate check")
+            throw Abort(.forbidden, reason: "Only creator can calculate check".localized(on: request))
         }
 
         guard check.status != .accepted else {
-            throw Abort(.badRequest, reason: "Check already accepted")
+            throw Abort(.badRequest, reason: "Check already accepted".localized(on: request))
         }
 
         let selectedProductIDs = selectedProducts.map { $0.key }
@@ -205,7 +207,7 @@ struct DefaultCheckService: CheckService {
 
         return try check.products.query(on: request).all().flatMap { products in
             guard selectedProductIDs.count == products.count else {
-                throw Abort(.badRequest, reason: "All products should be selected")
+                throw Abort(.badRequest, reason: "All products should be selected".localized(on: request))
             }
 
             var usersTotal: [User.ID: Double] = [:]
@@ -213,7 +215,7 @@ struct DefaultCheckService: CheckService {
 
             try selectedProducts.forEach { productID, userIDs in
                 guard let product = products.first(where: { $0.id == productID }) else {
-                    throw Abort(.notFound, reason: "Product with ID \(productID) not found")
+                    throw Abort(.notFound, reason: "Product with ID %{ID} not found".localized(on: request, interpolations: ["ID": productID]))
                 }
 
                 let total = product.price / Double(userIDs.count)
@@ -235,18 +237,18 @@ struct DefaultCheckService: CheckService {
 
             return try check.users.pivots(on: request).all().flatMap { checkUsers in
                 guard checkUsers.count == usersIDs.count else {
-                    throw Abort(.badRequest, reason: "All users should be with selected products")
+                    throw Abort(.badRequest, reason: "All users should be with selected products".localized(on: request))
                 }
 
                 var savedCheckUserFutures: [Future<CheckUser>] = []
 
                 try usersTotal.forEach { userID, total in
                     guard var checkUser = checkUsers.first(where: { $0.userID == userID }) else {
-                        throw Abort(.notFound, reason: "User with ID \(userID) not found in CheckUsers")
+                        throw Abort(.notFound, reason: "User with ID %{ID} not found in CheckUsers".localized(on: request, interpolations: ["ID": userID]))
                     }
 
                     guard let products = userProducts[userID] else {
-                        throw Abort(.badRequest, reason: "All users should be with selected products")
+                        throw Abort(.badRequest, reason: "All users should be with selected products".localized(on: request))
                     }
 
                     checkUser.total = total
@@ -292,12 +294,12 @@ struct DefaultCheckService: CheckService {
 
     func approve(on request: Request, check: Check) throws -> Future<[CheckUser.Form]> {
         guard check.status == .calculated || check.status == .rejected else {
-            throw Abort(.badRequest, reason: "Check should be calculated")
+            throw Abort(.badRequest, reason: "Check should be calculated".localized(on: request))
         }
 
         return try check.users.pivots(on: request).all().flatMap { checkUsers in
             guard var checkUser = checkUsers.first(where: { $0.userID == request.userID }) else {
-                throw Abort(.forbidden, reason: "User is not participant of this check")
+                throw Abort(.forbidden, reason: "User is not participant of this check".localized(on: request))
             }
 
             checkUser.reviewDate = Date()
@@ -328,7 +330,7 @@ struct DefaultCheckService: CheckService {
             .first()
             .flatMap { checkUser in
                 guard var checkUser = checkUser else {
-                    throw Abort(.forbidden, reason: "User is not participant of this check")
+                    throw Abort(.forbidden, reason: "User is not participant of this check".localized(on: request))
                 }
 
                 checkUser.reviewDate = Date()
@@ -352,7 +354,7 @@ struct DefaultCheckService: CheckService {
 
     func distribute(on request: Request, check: Check) throws -> Future<Check.Form> {
         guard check.status == .accepted else {
-            throw Abort(.badRequest, reason: "Check should be accepted")
+            throw Abort(.badRequest, reason: "Check should be accepted".localized(on: request))
         }
 
         return try check.users.pivots(on: request).all().flatMap { checkUsers in
