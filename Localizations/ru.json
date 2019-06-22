@@ -34,5 +34,11 @@
     "Debtor is not participant": "Должник не участник",
     "Creator is not participant": "Создатель не участник",
     "Conversation is not accepted": "Диалог не принят",
-    "Created debt ID not found": "ID созданного долга не найден"
+    "Created debt ID not found": "ID созданного долга не найден",
+    "Missing required parameters": "Отсутствуют обязательные параметры",
+    "Unknown error from Federal Tax Service": "Неизвестная ошибка Федеральной Налоговой Службы",
+    "Missing login/password for Federal Tax Service": "Отсутствует логин/пароль для Федеральной Налоговой Службы",
+    "Login or password for Federal Tax Service incorrect": "Неверный логин или пароль для Федеральной Налоговой Службы",
+    "Check not found": "Чек не найден",
+    "Check accepted": "Чек принят"
 }

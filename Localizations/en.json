@@ -34,5 +34,11 @@
     "Debtor is not participant": "Debtor is not participant",
     "Creator is not participant": "Creator is not participant",
     "Conversation is not accepted": "Conversation is not accepted",
-    "Created debt ID not found": "Created debt ID not found"
+    "Created debt ID not found": "Created debt ID not found",
+    "Missing required parameters": "Missing required parameters",
+    "Unknown error from Federal Tax Service": "Unknown error from Federal Tax Service",
+    "Missing login/password for Federal Tax Service": "Missing login/password for Federal Tax Service",
+    "Login or password for Federal Tax Service incorrect": "Login or password for Federal Tax Service incorrect",
+    "Check not found": "Check not found",
+    "Check accepted": "Check accepted"
 }
