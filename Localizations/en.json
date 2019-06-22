@@ -29,5 +29,10 @@
     "User is not participant of conversation": "User is not participant of conversation",
     "Debt creation request must be accepted": "Debt creation request must be accepted",
     "Unable to delete the conversation because with this user you have a common undistributed check. You can remove this person from the check and then try again.": "Unable to delete the conversation because with this user you have a common undistributed check. You can remove this person from the check and then try again.",
-    "Forbidden delete conversation without request": "Forbidden delete conversation without request"
+    "Forbidden delete conversation without request": "Forbidden delete conversation without request",
+    "Conversation with ID %{ID} not found": "Conversation with ID %{ID} not found",
+    "Debtor is not participant": "Debtor is not participant",
+    "Creator is not participant": "Creator is not participant",
+    "Conversation is not accepted": "Conversation is not accepted",
+    "Created debt ID not found": "Created debt ID not found"
 }

@@ -38,11 +38,11 @@ class DefaultDebtService: DebtService {
 
     private func validate(conversation: Conversation, on request: Request) throws {
         guard conversation.creatorID == request.userID || conversation.opponentID == request.userID else {
-            throw Abort(.badRequest, reason: "User is not participant of conversation")
+            throw Abort(.badRequest, reason: "User is not participant of conversation".localized(on: request))
         }
 
         guard conversation.status == .accepted else {
-            throw Abort(.badRequest, reason: "Conversation is not accepted")
+            throw Abort(.badRequest, reason: "Debt creation request must be accepted".localized(on: request))
         }
     }
 
@@ -54,18 +54,18 @@ class DefaultDebtService: DebtService {
 
             return Conversation
                 .find(form.conversationID, on: request)
-                .unwrap(or: Abort(.notFound, reason: "Conversation with ID \(form.conversationID) not found"))
+                .unwrap(or: Abort(.notFound, reason: "Conversation with ID %{ID} not found".localized(on: request, interpolations: ["ID": form.conversationID])))
                 .flatMap { conversation in
                     guard conversation.creatorID == form.debtorID || conversation.opponentID == form.debtorID else {
-                        throw Abort(.badRequest, reason: "Debtor is not participant")
+                        throw Abort(.badRequest, reason: "Debtor is not participant".localized(on: request))
                     }
 
                     guard conversation.creatorID == userID || conversation.opponentID == userID else {
-                        throw Abort(.badRequest, reason: "Creator is not participant")
+                        throw Abort(.badRequest, reason: "Creator is not participant".localized(on: request))
                     }
 
                     guard conversation.status == .accepted else {
-                        throw Abort(.badRequest, reason: "Conversation is not accepted")
+                        throw Abort(.badRequest, reason: "Conversation is not accepted".localized(on: request))
                     }
 
                     return Debt(form: form, creatorID: userID).save(on: request).map { debt in
@@ -81,10 +81,10 @@ class DefaultDebtService: DebtService {
 
             return Conversation
                 .find(conversationID, on: request)
-                .unwrap(or: Abort(.badRequest, reason: "Conversation not found"))
+                .unwrap(or: Abort(.notFound, reason: "Conversation with ID %{ID} not found".localized(on: request, interpolations: ["ID": conversationID])))
                 .flatMap { conversation in
                     guard conversation.creatorID == userID || conversation.opponentID == userID else {
-                        throw Abort(.badRequest, reason: "User is not participant of conversation")
+                        throw Abort(.badRequest, reason: "User is not participant of conversation".localized(on: request))
                     }
 
                     return request.requestPooledConnection(to: .psql).flatMap { conn -> Future<[Debt.Form]> in
@@ -109,7 +109,7 @@ class DefaultDebtService: DebtService {
         let response = Response(using: request)
 
         guard debt.status != .accepted else {
-            throw Abort(.badRequest, reason: "Debt already accepted")
+            throw Abort(.badRequest, reason: "Debt already accepted".localized(on: request))
         }
 
         return debt.conversation.get(on: request).flatMap { conversation in
@@ -168,15 +168,15 @@ class DefaultDebtService: DebtService {
             }
 
             guard conversation.creatorID == form.debtorID || conversation.opponentID == form.debtorID else {
-                throw Abort(.badRequest, reason: "Debtor is not participant")
+                throw Abort(.badRequest, reason: "Debtor is not participant".localized(on: request))
             }
 
             guard conversation.creatorID == request.userID || conversation.opponentID == request.userID else {
-                throw Abort(.badRequest, reason: "User is not participant of conversation")
+                throw Abort(.badRequest, reason: "User is not participant of conversation".localized(on: request))
             }
 
             guard conversation.status == .accepted else {
-                throw Abort(.badRequest, reason: "Conversation is not accepted")
+                throw Abort(.badRequest, reason: "Conversation is not accepted".localized(on: request))
             }
 
             if debt.status == .accepted {
@@ -194,7 +194,7 @@ class DefaultDebtService: DebtService {
             try self.validate(conversation: conversation, on: request)
 
             guard debt.status != .newRequest else {
-                throw Abort(.badRequest, reason: "Debt should be deleted without request")
+                throw Abort(.badRequest, reason: "Debt should be deleted without request".localized(on: request))
             }
 
             debt.status = .deleteRequest
@@ -209,7 +209,7 @@ class DefaultDebtService: DebtService {
             try self.validate(conversation: conversation, on: request)
 
             guard debt.status == .newRequest else {
-                throw Abort(.badRequest, reason: "Debt can't be deleted without request")
+                throw Abort(.badRequest, reason: "Debt can't be deleted without request".localized(on: request))
             }
 
             return debt.delete(on: request)
@@ -221,7 +221,7 @@ class DefaultDebtService: DebtService {
             try self.validate(conversation: conversation, on: request)
 
             guard debt.status == .accepted else {
-                throw Abort(.badRequest, reason: "Debt must be accepted")
+                throw Abort(.badRequest, reason: "Debt must be accepted".localized(on: request))
             }
 
             debt.status = .repayRequest
@@ -234,12 +234,12 @@ class DefaultDebtService: DebtService {
     func createAndAccept(on request: Request, form: Debt.CreateForm) throws -> Future<Response> {
         return try self.create(request: request, form: form).flatMap { createdDebtForm in
             guard let debtID = createdDebtForm.id else {
-                throw Abort(.notFound, reason: "Created debt ID not found")
+                throw Abort(.notFound, reason: "Created debt ID not found".localized(on: request))
             }
 
             return Debt
                 .find(debtID, on: request)
-                .unwrap(or: Abort(.notFound, reason: "Created debt ID not found"))
+                .unwrap(or: Abort(.notFound, reason: "Created debt ID not found".localized(on: request)))
                 .flatMap { debt in
                     return try self.accept(on: request, debt: debt)
             }

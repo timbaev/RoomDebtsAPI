@@ -29,5 +29,10 @@
     "User is not participant of conversation": "Пользователь не участник долгов",
     "Debt creation request must be accepted": "Запрос на создание долгов должен быть принят",
     "Unable to delete the conversation because with this user you have a common undistributed check. You can remove this person from the check and then try again.": "Невозможно удалить диалог, потому что у этого пользователя есть общие нераспределенные чеки. Вы можете удалить этого человека из чека, а затем повторить попытку.",
-    "Forbidden delete conversation without request": "Запрещено удалять диалог без запроса"
+    "Forbidden delete conversation without request": "Запрещено удалять диалог без запроса",
+    "Conversation with ID %{ID} not found": "Диалог с ID %{ID} не найден",
+    "Debtor is not participant": "Должник не участник",
+    "Creator is not participant": "Создатель не участник",
+    "Conversation is not accepted": "Диалог не принят",
+    "Created debt ID not found": "ID созданного долга не найден"
 }
