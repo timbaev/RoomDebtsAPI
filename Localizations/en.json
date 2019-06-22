@@ -23,5 +23,11 @@
     "User with ID %{ID} not found in CheckUsers": "User with ID %{ID} not found in CheckUsers",
     "Check should be calculated": "Check should be calculated",
     "User is not participant of this check": "User is not participant of this check",
-    "Check should be accepted": "Check should be accepted"
+    "Check should be accepted": "Check should be accepted",
+    "User with ID %{ID} not found": "User with ID %{ID} not found",
+    "Conversation with %{firstName} %{lastName} already exists": "Conversation with %{firstName} %{lastName} already exists",
+    "User is not participant of conversation": "User is not participant of conversation",
+    "Debt creation request must be accepted": "Debt creation request must be accepted",
+    "Unable to delete the conversation because with this user you have a common undistributed check. You can remove this person from the check and then try again.": "Unable to delete the conversation because with this user you have a common undistributed check. You can remove this person from the check and then try again.",
+    "Forbidden delete conversation without request": "Forbidden delete conversation without request"
 }

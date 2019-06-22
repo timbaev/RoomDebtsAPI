@@ -66,7 +66,7 @@ class DefaultConversationService: ConversationService {
         
         let opponentFuture = User
             .find(opponentID, on: request)
-            .unwrap(or: Abort(.notFound, reason: "User with ID \(opponentID) not found"))
+            .unwrap(or: Abort(.notFound, reason: "User with ID %{ID} not found".localized(on: request, interpolations: ["ID": opponentID])))
         
         return opponentFuture.flatMap { opponent in
             return try request.authorizedUser().flatMap { user in
@@ -78,7 +78,7 @@ class DefaultConversationService: ConversationService {
                     builder.filter(\.creatorID == opponentID).filter(\.opponentID == opponentID)
                 }).first().flatMap { conversation in
                     guard conversation == nil else {
-                        throw Abort(.badRequest, reason: "Conversation with \(opponent.firstName) \(opponent.lastName) already exists")
+                        throw Abort(.badRequest, reason: "Conversation with %{firstName} %{lastName} already exists".localized(on: request, interpolations: ["firstName": opponent.firstName, "lastName": opponent.lastName]))
                     }
                     
                     return Conversation(creatorID: userID, opponentID: opponentID)
@@ -118,7 +118,7 @@ class DefaultConversationService: ConversationService {
             let response = Response(using: request)
 
             guard conversation.opponentID == userID else {
-                throw Abort(.badRequest, reason: "User is not opponent of converation")
+                throw Abort(.badRequest, reason: "User is not participant of conversation".localized(on: request))
             }
 
             if conversation.status == .invited {
@@ -170,7 +170,7 @@ class DefaultConversationService: ConversationService {
             let response = Response(using: request)
 
             guard conversation.opponentID == userID else {
-                throw Abort(.badRequest, reason: "User is not opponent of converation")
+                throw Abort(.badRequest, reason: "User is not participant of conversation".localized(on: request))
             }
 
             if conversation.status == .invited {
@@ -215,11 +215,11 @@ class DefaultConversationService: ConversationService {
 
     func repayAllRequest(on request: Request, conversation: Conversation) throws -> Future<Conversation.Form> {
         guard try conversation.creatorID == request.requiredUserID() || conversation.opponentID == request.requiredUserID() else {
-            throw Abort(.badRequest, reason: "User is not participant of conversation")
+            throw Abort(.badRequest, reason: "User is not participant of conversation".localized(on: request))
         }
 
         guard conversation.status == .accepted else {
-            throw Abort(.badRequest, reason: "Conversation should be approved")
+            throw Abort(.badRequest, reason: "Debt creation request must be accepted".localized(on: request))
         }
 
         let opponentID = (conversation.creatorID == request.userID) ? conversation.opponentID : conversation.creatorID
@@ -241,15 +241,15 @@ class DefaultConversationService: ConversationService {
             builder.filter(\CheckUser.userID == userID).filter(\CheckUser.userID == opponentID)
         }).count().flatMap { commonCheckCount in
             guard commonCheckCount == 0 else {
-                throw Abort(.badRequest, reason: "Unable to delete the conversation because with this user you have a common undistributed check. You can remove this person from the check and then try again.")
+                throw Abort(.badRequest, reason: "Unable to delete the conversation because with this user you have a common undistributed check. You can remove this person from the check and then try again.".localized(on: request))
             }
 
             guard try conversation.creatorID == request.requiredUserID() || conversation.opponentID == request.requiredUserID() else {
-                throw Abort(.badRequest, reason: "User is not participant of conversation")
+                throw Abort(.badRequest, reason: "User is not participant of conversation".localized(on: request))
             }
 
             guard conversation.status == .accepted || conversation.status == .repayRequest else {
-                throw Abort(.badRequest, reason: "Conversation should be approved")
+                throw Abort(.badRequest, reason: "Debt creation request must be accepted".localized(on: request))
             }
 
             conversation.status = .deleteRequest
@@ -262,7 +262,7 @@ class DefaultConversationService: ConversationService {
 
     func cancelRequest(on request: Request, conversation: Conversation) throws -> Future<Conversation.Form> {
         guard try conversation.creatorID == request.requiredUserID() || conversation.opponentID == request.requiredUserID() else {
-            throw Abort(.badRequest, reason: "User is not participant of conversation")
+            throw Abort(.badRequest, reason: "User is not participant of conversation".localized(on: request))
         }
 
         guard conversation.status == .repayRequest || conversation.status == .deleteRequest else {
@@ -280,11 +280,11 @@ class DefaultConversationService: ConversationService {
 
     func delete(on request: Request, conversation: Conversation) throws -> Future<Void> {
         guard try conversation.creatorID == request.requiredUserID() else {
-            throw Abort(.badRequest, reason: "User is not participant of conversation")
+            throw Abort(.badRequest, reason: "User is not participant of conversation".localized(on: request))
         }
 
         guard conversation.status == .invited else {
-            throw Abort(.badRequest, reason: "Conversation status is not 'invited'")
+            throw Abort(.badRequest, reason: "Forbidden delete conversation without request".localized(on: request))
         }
 
         return conversation.delete(on: request)

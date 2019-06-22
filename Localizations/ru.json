@@ -23,5 +23,11 @@
     "User with ID %{ID} not found in CheckUsers": "Пользователь с ID %{ID} не найден в CheckUsers",
     "Check should be calculated": "Чек должен быть рассчитан",
     "User is not participant of this check": "Пользователь не является участником этого чека",
-    "Check should be accepted": "Чек должен быть принят"
+    "Check should be accepted": "Чек должен быть принят",
+    "User with ID %{ID} not found": "Пользователь с ID %{ID} не найден",
+    "Conversation with %{firstName} %{lastName} already exists": "Долги с %{firstName} %{lastName} уже существуют",
+    "User is not participant of conversation": "Пользователь не участник долгов",
+    "Debt creation request must be accepted": "Запрос на создание долгов должен быть принят",
+    "Unable to delete the conversation because with this user you have a common undistributed check. You can remove this person from the check and then try again.": "Невозможно удалить диалог, потому что у этого пользователя есть общие нераспределенные чеки. Вы можете удалить этого человека из чека, а затем повторить попытку.",
+    "Forbidden delete conversation without request": "Запрещено удалять диалог без запроса"
 }
