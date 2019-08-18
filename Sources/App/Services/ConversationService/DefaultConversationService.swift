@@ -13,6 +13,39 @@ class DefaultConversationService: ConversationService {
 
     // MARK: - Instance Methods
 
+    private func fetchNewDebtCount(on request: Request, for conversationID: Conversation.ID) throws -> Future<Int> {
+        return try ConversationVisit.query(on: request)
+            .filter(\.userID == request.requiredUserID())
+            .filter(\.conversationID == conversationID)
+            .first()
+            .flatMap { conversationVisit in
+                if let conversationVisit = conversationVisit {
+                    return Debt.query(on: request)
+                        .filter(\.conversationID == conversationID)
+                        .filter(\.updatedAt > conversationVisit.visitDate)
+                        .count()
+                } else {
+                    return Debt.query(on: request).filter(\.conversationID == conversationID).count()
+                }
+        }
+    }
+
+    private func updateNewDebtCount(on request: Request, for conversationForms: [Conversation.Form]) throws -> Future<[Conversation.Form]> {
+        return try conversationForms.map { conversationForm in
+            guard let conversationID = conversationForm.id else {
+                throw Abort(.internalServerError)
+            }
+
+            return try self.fetchNewDebtCount(on: request, for: conversationID).map { count in
+                var conversationForm = conversationForm
+
+                conversationForm.newDebtCount = count
+
+                return conversationForm
+            }
+        }.flatten(on: request)
+    }
+
     private func updatePriceNewRequest(on request: Request, debt: Debt, conversation: Conversation) -> Future<Conversation> {
         let debtorID = debt.debtorID
         let price = debt.price
@@ -107,7 +140,9 @@ class DefaultConversationService: ConversationService {
                     .join(.inner, opponent, where: opponent.k(\.id) == \Conversation.opponentID)
                     .where(FQWhere(\Conversation.creatorID == userID).or(\Conversation.opponentID == userID))
                     .execute(on: conn)
-                    .decode(Conversation.Form.self)
+                    .decode(Conversation.Form.self).flatMap { conversationForms in
+                        return try self.updateNewDebtCount(on: request, for: conversationForms)
+                }
             }
         }
     }

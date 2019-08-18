@@ -1,9 +1,5 @@
 import Vapor
 
-fileprivate enum BasePath {
-    static let users = "v1/account"
-}
-
 /// Register your application's routes here.
 public func routes(_ router: Router) throws {
     
@@ -42,4 +38,10 @@ public func routes(_ router: Router) throws {
     let checkController = CheckController(checkService: RDServices.checkService, productService: RDServices.productService)
 
     try router.register(collection: checkController)
+
+    // MARK: - ConversationVisitController
+
+    let conversationVisitController = ConversationVisitController(conversationVisitService: RDServices.conversationVisitService)
+
+    try router.register(collection: conversationVisitController)
 }

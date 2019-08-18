@@ -36,6 +36,8 @@ final class Conversation: Object {
         let debtorID: Int?
         let rejectStatus: String?
 
+        var newDebtCount: Int?
+
         // MARK: - Initializers
 
         init(conversation: Conversation, creator: User, opponent: User) {
@@ -103,6 +105,10 @@ extension Conversation {
     }
 
     var debts: Children<Conversation, Debt> {
+        return self.children(\.conversationID)
+    }
+
+    var conversationVisits: Children<Conversation, ConversationVisit> {
         return self.children(\.conversationID)
     }
 }

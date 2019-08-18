@@ -163,6 +163,10 @@ extension User {
     var asCreatorChecks: Children<User, Check> {
         return self.children(\.creatorID)
     }
+
+    var conversationVisits: Children<User, ConversationVisit> {
+        return self.children(\.userID)
+    }
 }
 
 // MARK: - Future

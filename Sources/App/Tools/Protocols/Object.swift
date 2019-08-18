@@ -10,7 +10,6 @@ import FluentPostgreSQL
 import Crypto
 
 public typealias DatabaseType = PostgreSQLDatabase
-
 public typealias IDType = Int
 
 public protocol Object: Model, Parameter, Content, Migration where ID == IDType, Database == DatabaseType {

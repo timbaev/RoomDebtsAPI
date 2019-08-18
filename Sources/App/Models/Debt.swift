@@ -73,6 +73,7 @@ final class Debt: Object {
     // MARK: - Type Properties
 
     static var createdAtKey: TimestampKey? = \.createdAt
+    static var updatedAtKey: TimestampKey? = \.updatedAt
 
     // MARK: - Instance Properties
 
@@ -80,11 +81,13 @@ final class Debt: Object {
     var price: Double
     var date: Date
     var description: String?
+    var createdAt: Date?
+    var updatedAt: Date?
+    var isRejected = false
+
     var creatorID: User.ID
     var debtorID: User.ID
     var conversationID: Conversation.ID
-    var createdAt: Date?
-    var isRejected = false
 
     var status: Status {
         didSet {

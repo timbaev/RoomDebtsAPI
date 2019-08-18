@@ -24,6 +24,7 @@ enum RDServices {
                                                                 conversationService: RDServices.conversationService)
 
     static let productService: ProductService = DefaultProductService()
+    static let conversationVisitService: ConversationVisitService = DefaultConversationVisitService()
 
     // MARK: -
 
